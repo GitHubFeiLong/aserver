@@ -28,7 +28,7 @@ public class DataBaseAuditListener {
     //~fields
     //==================================================================================================================
     public static final String APP_ID = "appId";
-    public static final String CREATED_DATE = "created_date";
+    public static final String CREATED_DATE = "createdDate";
     public static final String LAST_MODIFIED_DATE = "lastModifiedDate";
     public static final String CREATED_BY = "createdBy";
     public static final String LAST_MODIFIED_BY = "lastModifiedBy";
@@ -51,16 +51,14 @@ public class DataBaseAuditListener {
         try {
             // 填充创建用户Id
             fillAppId(object, aClass, APP_ID);
-            // 填充创建用户Id
-            fillCreateUserId(object, aClass, CREATED_BY);
+            // 填充创建用户
+            fillCreateUser(object, aClass, CREATED_BY);
             // 填充更新用户id
-            fillUpdateUserId(object, aClass, UPDATE_USER_ID);
+            fillUpdateUser(object, aClass, LAST_MODIFIED_BY);
             // 填充创建时间
-            fillCreateTime(object, aClass, CREATE_TIME);
+            fillCreateTime(object, aClass, CREATED_DATE);
             // 填充更新时间
-            fillUpdateTime(object, aClass, UPDATE_TIME);
-            // 填充删除状态
-            addDeleted(object, aClass, DELETED);
+            fillUpdateTime(object, aClass, LAST_MODIFIED_DATE);
         } catch (Exception e) {
             log.error("jpa 新增时自动填充属性时出现错误：{}", e.getMessage());
         }
@@ -80,9 +78,9 @@ public class DataBaseAuditListener {
         }
         try {
             // 填充更新用户Id
-            fillUpdateUserId(object, aClass, UPDATE_USER_ID);
+            fillUpdateUser(object, aClass, LAST_MODIFIED_BY);
             // 填充更新时间
-            fillUpdateTime(object, aClass, UPDATE_TIME);
+            fillUpdateTime(object, aClass, LAST_MODIFIED_DATE);
         } catch (Exception e) {
             log.error("jpa 更新时自动填充属性时出现错误：{}", e.getMessage());
         }
@@ -143,7 +141,7 @@ public class DataBaseAuditListener {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    protected void fillCreateUserId(Object object, Class<?> aClass, String propertyName) throws NoSuchFieldException, IllegalAccessException, IntrospectionException, InvocationTargetException, NoSuchMethodException {
+    protected void fillCreateUser(Object object, Class<?> aClass, String propertyName) throws NoSuchFieldException, IllegalAccessException, IntrospectionException, InvocationTargetException, NoSuchMethodException {
         Field createUserId = aClass.getDeclaredField(propertyName);
         createUserId.setAccessible(true);
 
@@ -172,7 +170,7 @@ public class DataBaseAuditListener {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    protected void fillUpdateUserId(Object object, Class<?> aClass, String propertyName) throws NoSuchFieldException, IllegalAccessException, IntrospectionException, InvocationTargetException {
+    protected void fillUpdateUser(Object object, Class<?> aClass, String propertyName) throws NoSuchFieldException, IllegalAccessException, IntrospectionException, InvocationTargetException {
         Field updateUserId = aClass.getDeclaredField(propertyName);
         updateUserId.setAccessible(true);
 
@@ -190,25 +188,6 @@ public class DataBaseAuditListener {
             }
         }
 
-    }
-
-    /**
-     * 填充删除状态
-     *
-     * @param object
-     * @param aClass
-     * @param propertyName 属性名（对应实体类中的属性）
-     * @throws NoSuchFieldException
-     * @throws IllegalAccessException
-     */
-    protected void addDeleted(Object object, Class<?> aClass, String propertyName) throws NoSuchFieldException, IllegalAccessException, IntrospectionException, InvocationTargetException {
-        Field deleted = aClass.getDeclaredField(propertyName);
-        deleted.setAccessible(true);
-        // 获取删除状态值
-        Object deletedValue = deleted.get(object);
-        if (deletedValue == null) {
-            deleted.set(object, false);
-        }
     }
 
     /**

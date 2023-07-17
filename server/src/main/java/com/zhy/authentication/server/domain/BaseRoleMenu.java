@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "base_role_menu")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class BaseRoleMenu implements Serializable {
+public class BaseRoleMenu extends BasePO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

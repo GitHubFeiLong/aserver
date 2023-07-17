@@ -1,7 +1,9 @@
 package com.zhy.authentication.server.repository;
 
+import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.domain.BaseMenu;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 
@@ -10,6 +12,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface BaseMenuRepository extends JpaRepository<BaseMenu, Long> {
+public interface BaseMenuRepository extends JpaRepository<BaseMenu, Long>, JpaSpecificationExecutor<BaseMenu> {
 
 }

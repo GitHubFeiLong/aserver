@@ -17,7 +17,7 @@ import java.util.Set;
 @Entity
 @Table(name = "base_menu")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class BaseMenu implements Serializable {
+public class BaseMenu extends BasePO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -17,7 +17,7 @@ import java.util.Set;
 @Entity
 @Table(name = "base_role")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class BaseRole implements Serializable {
+public class BaseRole extends BasePO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

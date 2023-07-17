@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "base_app")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class BaseApp implements Serializable {
+public class BaseApp extends BasePO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

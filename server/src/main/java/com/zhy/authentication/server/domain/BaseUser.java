@@ -17,7 +17,7 @@ import java.util.Set;
 @Entity
 @Table(name = "base_user")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class BaseUser implements Serializable {
+public class BaseUser extends BasePO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
