@@ -12,7 +12,8 @@ import java.util.Optional;
  * @version 1.0
  * @date 2022/1/23 10:59
  */
-public final class GoudongContext {
+@Deprecated
+public final class UserContext {
 
     //~fields
     //==================================================================================================================
@@ -20,7 +21,7 @@ public final class GoudongContext {
 
     //~methods
     //==================================================================================================================
-    private GoudongContext() {
+    private UserContext() {
     }
 
     /**

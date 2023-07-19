@@ -2,16 +2,21 @@ package com.zhy.authentication.server.service.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
+import javax.persistence.Column;
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 
 /**
  * A DTO for the {@link com.zhy.authentication.server.domain.BaseUser} entity.
  */
 @ApiModel(description = "基础用户")
+@Data
 public class BaseUserDTO implements Serializable {
 
     private Long id;
@@ -54,6 +59,13 @@ public class BaseUserDTO implements Serializable {
     private Boolean locked;
 
     /**
+     * 有效截止时间
+     */
+    @NotNull
+    @ApiModelProperty(value = "锁定状态：true 锁定；false 未锁定", required = true)
+    private Date validTime;
+
+    /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
@@ -63,13 +75,13 @@ public class BaseUserDTO implements Serializable {
      * 创建时间
      */
     @ApiModelProperty(value = "创建时间")
-    private LocalDate createdDate;
+    private Date createdDate;
 
     /**
      * 最后修改时间
      */
     @ApiModelProperty(value = "最后修改时间")
-    private LocalDate lastModifiedDate;
+    private Date lastModifiedDate;
 
     /**
      * 创建人
@@ -82,131 +94,4 @@ public class BaseUserDTO implements Serializable {
      */
     @ApiModelProperty(value = "最后修改人")
     private String lastModifiedBy;
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public Boolean isLocked() {
-        return locked;
-    }
-
-    public void setLocked(Boolean locked) {
-        this.locked = locked;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public LocalDate getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public LocalDate getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(LocalDate lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        BaseUserDTO baseUserDTO = (BaseUserDTO) o;
-        if (baseUserDTO.getId() == null || getId() == null) {
-            return false;
-        }
-        return Objects.equals(getId(), baseUserDTO.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getId());
-    }
-
-    @Override
-    public String toString() {
-        return "BaseUserDTO{" +
-            "id=" + getId() +
-            ", appId=" + getAppId() +
-            ", username='" + getUsername() + "'" +
-            ", password='" + getPassword() + "'" +
-            ", enabled='" + isEnabled() + "'" +
-            ", locked='" + isLocked() + "'" +
-            ", remark='" + getRemark() + "'" +
-            ", createdDate='" + getCreatedDate() + "'" +
-            ", lastModifiedDate='" + getLastModifiedDate() + "'" +
-            ", createdBy='" + getCreatedBy() + "'" +
-            ", lastModifiedBy='" + getLastModifiedBy() + "'" +
-            "}";
-    }
 }

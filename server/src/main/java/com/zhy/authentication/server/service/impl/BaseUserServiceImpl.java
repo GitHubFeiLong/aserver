@@ -1,9 +1,17 @@
 package com.zhy.authentication.server.service.impl;
 
-import com.zhy.authentication.server.domain.BaseUser;
+import com.goudong.core.util.tree.v2.Tree;
+import com.zhy.authentication.server.domain.*;
+import com.zhy.authentication.server.repository.BaseRoleMenuRepository;
+import com.zhy.authentication.server.repository.BaseRoleRepository;
 import com.zhy.authentication.server.repository.BaseUserRepository;
+import com.zhy.authentication.server.repository.BaseUserRoleRepository;
+import com.zhy.authentication.server.service.BaseRoleMenuService;
 import com.zhy.authentication.server.service.BaseUserService;
+import com.zhy.authentication.server.service.dto.BaseMenuDTO;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
+import com.zhy.authentication.server.service.dto.LoginDTO;
+import com.zhy.authentication.server.service.mapper.BaseMenuMapper;
 import com.zhy.authentication.server.service.mapper.BaseUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +20,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service Implementation for managing {@link BaseUser}.
@@ -23,14 +34,24 @@ public class BaseUserServiceImpl implements BaseUserService {
 
     private final Logger log = LoggerFactory.getLogger(BaseUserServiceImpl.class);
 
-    private final BaseUserRepository baseUserRepository;
+    @Resource
+    private BaseUserRepository baseUserRepository;
 
-    private final BaseUserMapper baseUserMapper;
+    @Resource
+    private BaseRoleMenuRepository baseRoleMenuRepository;
 
-    public BaseUserServiceImpl(BaseUserRepository baseUserRepository, BaseUserMapper baseUserMapper) {
-        this.baseUserRepository = baseUserRepository;
-        this.baseUserMapper = baseUserMapper;
-    }
+    @Resource
+    private BaseUserRoleRepository baseUserRoleRepository;
+
+    @Resource
+    private BaseRoleRepository baseRoleRepository;
+
+    @Resource
+    private BaseUserMapper baseUserMapper;
+
+    @Resource
+    private BaseMenuMapper baseMenuMapper;
+
 
     /**
      * Save a baseUser.
@@ -84,5 +105,51 @@ public class BaseUserServiceImpl implements BaseUserService {
     public void delete(Long id) {
         log.debug("Request to delete BaseUser : {}", id);
         baseUserRepository.deleteById(id);
+    }
+
+    /**
+     * 登录信息
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public LoginDTO login(Long id) {
+        BaseUser baseUser = baseUserRepository.findById(id).get();
+
+        List<BaseUserRole> allByUserId = baseUserRoleRepository.findAllByUserId(id);
+        Set<String> roles = new HashSet<>();
+        Map<String, BaseMenuDTO> menuMap = new HashMap<>();
+        allByUserId.stream()
+                .flatMap(m -> Stream.of(m.getRole().getMenus()))
+                .flatMap(Collection::stream)
+                .forEach(p -> {
+                    // 角色
+                    String name = p.getRole().getName();
+                    roles.add(name);
+                    // 菜单
+                    BaseMenu menu = p.getMenu();
+                    if (!menuMap.containsKey(menu.getPermissionId())) {
+                        BaseMenuDTO baseMenuDTO = baseMenuMapper.toDto(menu);
+                        menuMap.put(menu.getPermissionId(), baseMenuDTO);
+                    }
+                });
+
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setId(baseUser.getId());
+        loginDTO.setAppId(baseUser.getAppId());
+        loginDTO.setUsername(baseUser.getUsername());
+        loginDTO.setRoles(roles);
+
+        List<BaseMenuDTO> menuDTOS = new ArrayList<>(menuMap.values());
+
+        Collections.sort(menuDTOS, (o1, o2) -> ((BaseMenuDTO)o1).getSortNum() - ((BaseMenuDTO)o2).getSortNum());
+
+        // Tree.getInstance().id(BaseMenuDTO::getId).parentId(BaseMenuDTO::getParentId).children(BaseMenuDTO::getChildren).to
+
+        loginDTO.setMenus(menuDTOS);
+
+        return loginDTO;
     }
 }

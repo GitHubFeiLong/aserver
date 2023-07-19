@@ -7,11 +7,13 @@ import com.zhy.authentication.server.service.dto.BaseUserRoleDTO;
 import com.zhy.authentication.server.service.mapper.BaseUserRoleMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -58,6 +60,21 @@ public class BaseUserRoleServiceImpl implements BaseUserRoleService {
         log.debug("Request to get all BaseUserRoles");
         return baseUserRoleRepository.findAll(pageable)
             .map(baseUserRoleMapper::toDto);
+    }
+
+    /**
+     * 查询用户id的所有角色
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<BaseUserRole> findAllByUserId(Long userId) {
+        log.info("=================");
+        List<BaseUserRole> all = baseUserRoleRepository.findAllByUserId(userId);
+        log.info("=================");
+        return all;
     }
 
 

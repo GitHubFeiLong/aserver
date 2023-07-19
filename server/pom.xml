@@ -73,7 +73,10 @@
             <version>${commons-pool2.version}</version>
             <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -140,6 +143,12 @@
             <version>${mapstruct.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- jwt：token工具包 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.goudong</groupId>
@@ -150,10 +159,17 @@
         </dependency>
         <dependency>
             <groupId>com.goudong</groupId>
-            <artifactId>goudong-spring-boot-starters</artifactId>
+            <artifactId>goudong-web-spring-boot-starter</artifactId>
             <scope>system</scope>
             <version>1.0</version>
             <systemPath>${pom.basedir}/lib/goudong-web-spring-boot-starter-1.0.0.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.goudong</groupId>
+            <artifactId>goudong-redis-spring-boot-starter</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>${pom.basedir}/lib/goudong-redis-spring-boot-starter-1.0.0.jar</systemPath>
         </dependency>
     </dependencies>
 

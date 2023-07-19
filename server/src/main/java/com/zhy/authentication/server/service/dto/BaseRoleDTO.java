@@ -2,16 +2,19 @@ package com.zhy.authentication.server.service.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.Objects;
 
 /**
  * A DTO for the {@link com.zhy.authentication.server.domain.BaseRole} entity.
  */
 @ApiModel(description = "角色表")
+@Data
 public class BaseRoleDTO implements Serializable {
 
     private Long id;
@@ -41,13 +44,13 @@ public class BaseRoleDTO implements Serializable {
      * 创建时间
      */
     @ApiModelProperty(value = "创建时间")
-    private LocalDate createdDate;
+    private Date createdDate;
 
     /**
      * 最后修改时间
      */
     @ApiModelProperty(value = "最后修改时间")
-    private LocalDate lastModifiedDate;
+    private Date lastModifiedDate;
 
     /**
      * 创建人
@@ -61,103 +64,4 @@ public class BaseRoleDTO implements Serializable {
     @ApiModelProperty(value = "最后修改人")
     private String lastModifiedBy;
 
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public LocalDate getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public LocalDate getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(LocalDate lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        BaseRoleDTO baseRoleDTO = (BaseRoleDTO) o;
-        if (baseRoleDTO.getId() == null || getId() == null) {
-            return false;
-        }
-        return Objects.equals(getId(), baseRoleDTO.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getId());
-    }
-
-    @Override
-    public String toString() {
-        return "BaseRoleDTO{" +
-            "id=" + getId() +
-            ", appId=" + getAppId() +
-            ", name='" + getName() + "'" +
-            ", remark='" + getRemark() + "'" +
-            ", createdDate='" + getCreatedDate() + "'" +
-            ", lastModifiedDate='" + getLastModifiedDate() + "'" +
-            ", createdBy='" + getCreatedBy() + "'" +
-            ", lastModifiedBy='" + getLastModifiedBy() + "'" +
-            "}";
-    }
 }

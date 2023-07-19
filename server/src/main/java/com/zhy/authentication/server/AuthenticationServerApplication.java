@@ -1,5 +1,6 @@
 package com.zhy.authentication.server;
 
+import com.goudong.boot.redis.EnableCommonsRedisConfig;
 import com.goudong.boot.web.EnableCommonsWebMvcConfig;
 import com.zhy.authentication.server.config.LogApplicationStartup;
 import org.springframework.boot.SpringApplication;
@@ -21,6 +22,7 @@ import org.springframework.util.StopWatch;
 @EntityScan("com.zhy.authentication.server.domain")
 @EnableJpaRepositories(basePackages = {"com.zhy.authentication.server.repository"})
 @EnableCommonsWebMvcConfig
+@EnableCommonsRedisConfig
 public class AuthenticationServerApplication {
 
     public static void main(String[] args) {

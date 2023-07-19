@@ -2,16 +2,21 @@ package com.zhy.authentication.server.service.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Objects;
+import java.util.Date;
+import java.util.List;
 
 /**
  * A DTO for the {@link com.zhy.authentication.server.domain.BaseMenu} entity.
  */
 @ApiModel(description = "菜单表")
+@Data
 public class BaseMenuDTO implements Serializable {
 
     private Long id;
@@ -99,13 +104,13 @@ public class BaseMenuDTO implements Serializable {
      * 创建时间
      */
     @ApiModelProperty(value = "创建时间")
-    private LocalDate createdDate;
+    private Date createdDate;
 
     /**
      * 最后修改时间
      */
     @ApiModelProperty(value = "最后修改时间")
-    private LocalDate lastModifiedDate;
+    private Date lastModifiedDate;
 
     /**
      * 创建人
@@ -120,174 +125,5 @@ public class BaseMenuDTO implements Serializable {
     private String lastModifiedBy;
 
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
-    }
-
-    public String getPermissionId() {
-        return permissionId;
-    }
-
-    public void setPermissionId(String permissionId) {
-        this.permissionId = permissionId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public Integer getSortNum() {
-        return sortNum;
-    }
-
-    public void setSortNum(Integer sortNum) {
-        this.sortNum = sortNum;
-    }
-
-    public Boolean isHide() {
-        return hide;
-    }
-
-    public void setHide(Boolean hide) {
-        this.hide = hide;
-    }
-
-    public String getMeta() {
-        return meta;
-    }
-
-    public void setMeta(String meta) {
-        this.meta = meta;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public LocalDate getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public LocalDate getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(LocalDate lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        BaseMenuDTO baseMenuDTO = (BaseMenuDTO) o;
-        if (baseMenuDTO.getId() == null || getId() == null) {
-            return false;
-        }
-        return Objects.equals(getId(), baseMenuDTO.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(getId());
-    }
-
-    @Override
-    public String toString() {
-        return "BaseMenuDTO{" +
-            "id=" + getId() +
-            ", parentId=" + getParentId() +
-            ", appId=" + getAppId() +
-            ", permissionId='" + getPermissionId() + "'" +
-            ", name='" + getName() + "'" +
-            ", type=" + getType() +
-            ", path='" + getPath() + "'" +
-            ", method='" + getMethod() + "'" +
-            ", sortNum=" + getSortNum() +
-            ", hide='" + isHide() + "'" +
-            ", meta='" + getMeta() + "'" +
-            ", remark='" + getRemark() + "'" +
-            ", createdDate='" + getCreatedDate() + "'" +
-            ", lastModifiedDate='" + getLastModifiedDate() + "'" +
-            ", createdBy='" + getCreatedBy() + "'" +
-            ", lastModifiedBy='" + getLastModifiedBy() + "'" +
-            "}";
-    }
+    private List<BaseMenuDTO> children;
 }

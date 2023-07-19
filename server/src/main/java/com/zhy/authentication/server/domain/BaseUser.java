@@ -1,6 +1,7 @@
 package com.zhy.authentication.server.domain;
 
 
+import lombok.Data;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -8,12 +9,13 @@ import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * 基础用户
  */
+@Data
 @Entity
 @Table(name = "base_user")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -45,7 +47,7 @@ public class BaseUser extends BasePO implements Serializable {
      */
     @NotNull
     @Size(max = 128)
-    @Column(name = "jhi_password", length = 128, nullable = false)
+    @Column(name = "password", length = 128, nullable = false)
     private String password;
 
     /**
@@ -59,8 +61,15 @@ public class BaseUser extends BasePO implements Serializable {
      * 锁定状态：true 锁定；false 未锁定
      */
     @NotNull
-    @Column(name = "jhi_locked", nullable = false)
+    @Column(name = "locked", nullable = false)
     private Boolean locked;
+
+    /**
+     * 有效截止时间
+     */
+    @NotNull
+    @Column(name = "valid_time", nullable = false)
+    private Date validTime;
 
     /**
      * 备注
@@ -72,13 +81,13 @@ public class BaseUser extends BasePO implements Serializable {
      * 创建时间
      */
     @Column(name = "created_date")
-    private LocalDate createdDate;
+    private Date createdDate;
 
     /**
      * 最后修改时间
      */
     @Column(name = "last_modified_date")
-    private LocalDate lastModifiedDate;
+    private Date lastModifiedDate;
 
     /**
      * 创建人
@@ -92,205 +101,7 @@ public class BaseUser extends BasePO implements Serializable {
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<BaseUserRole> roles = new HashSet<>();
-
-    // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public BaseUser appId(Long appId) {
-        this.appId = appId;
-        return this;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public BaseUser username(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public BaseUser password(String password) {
-        this.password = password;
-        return this;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Boolean isEnabled() {
-        return enabled;
-    }
-
-    public BaseUser enabled(Boolean enabled) {
-        this.enabled = enabled;
-        return this;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public Boolean isLocked() {
-        return locked;
-    }
-
-    public BaseUser locked(Boolean locked) {
-        this.locked = locked;
-        return this;
-    }
-
-    public void setLocked(Boolean locked) {
-        this.locked = locked;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public BaseUser remark(String remark) {
-        this.remark = remark;
-        return this;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public LocalDate getCreatedDate() {
-        return createdDate;
-    }
-
-    public BaseUser createdDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
-        return this;
-    }
-
-    public void setCreatedDate(LocalDate createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public LocalDate getLastModifiedDate() {
-        return lastModifiedDate;
-    }
-
-    public BaseUser lastModifiedDate(LocalDate lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-        return this;
-    }
-
-    public void setLastModifiedDate(LocalDate lastModifiedDate) {
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public BaseUser createdBy(String createdBy) {
-        this.createdBy = createdBy;
-        return this;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public BaseUser lastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-        return this;
-    }
-
-    public void setLastModifiedBy(String lastModifiedBy) {
-        this.lastModifiedBy = lastModifiedBy;
-    }
-
-    public Set<BaseUserRole> getRoles() {
-        return roles;
-    }
-
-    public BaseUser roles(Set<BaseUserRole> baseUserRoles) {
-        this.roles = baseUserRoles;
-        return this;
-    }
-
-    public BaseUser addRoles(BaseUserRole baseUserRole) {
-        this.roles.add(baseUserRole);
-        baseUserRole.setUser(this);
-        return this;
-    }
-
-    public BaseUser removeRoles(BaseUserRole baseUserRole) {
-        this.roles.remove(baseUserRole);
-        baseUserRole.setUser(null);
-        return this;
-    }
-
-    public void setRoles(Set<BaseUserRole> baseUserRoles) {
-        this.roles = baseUserRoles;
-    }
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof BaseUser)) {
-            return false;
-        }
-        return id != null && id.equals(((BaseUser) o).id);
-    }
-
-    @Override
-    public int hashCode() {
-        return 31;
-    }
-
-    @Override
-    public String toString() {
-        return "BaseUser{" +
-            "id=" + getId() +
-            ", appId=" + getAppId() +
-            ", username='" + getUsername() + "'" +
-            ", password='" + getPassword() + "'" +
-            ", enabled='" + isEnabled() + "'" +
-            ", locked='" + isLocked() + "'" +
-            ", remark='" + getRemark() + "'" +
-            ", createdDate='" + getCreatedDate() + "'" +
-            ", lastModifiedDate='" + getLastModifiedDate() + "'" +
-            ", createdBy='" + getCreatedBy() + "'" +
-            ", lastModifiedBy='" + getLastModifiedBy() + "'" +
-            "}";
-    }
+    private List<BaseUserRole> roles = new ArrayList<>();
 }

@@ -1,6 +1,7 @@
 package com.zhy.authentication.server.service;
 
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
+import com.zhy.authentication.server.service.dto.LoginDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -42,4 +43,11 @@ public interface BaseUserService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * 登录信息
+     * @param id
+     * @return
+     */
+    LoginDTO login(Long id);
 }

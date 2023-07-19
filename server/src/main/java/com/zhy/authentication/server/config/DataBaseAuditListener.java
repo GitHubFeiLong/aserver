@@ -2,7 +2,7 @@ package com.zhy.authentication.server.config;
 
 
 import com.zhy.authentication.server.context.Context;
-import com.zhy.authentication.server.context.GoudongContext;
+import com.zhy.authentication.server.context.UserContext;
 import com.zhy.authentication.server.domain.AbstractAuditingEntity;
 import lombok.extern.slf4j.Slf4j;
 
@@ -120,7 +120,7 @@ public class DataBaseAuditListener {
         Object appIdValue = appId.get(object);
         if (appIdValue == null) {
             // 获取userId值
-            Context context = GoudongContext.get();
+            Context context = UserContext.get();
             if (context != null && context.getAppId() != null) {
                 appId.set(object, context.getAppId());
             } else {
@@ -149,7 +149,7 @@ public class DataBaseAuditListener {
         Object userIdValue = createUserId.get(object);
         if (userIdValue == null) {
             // 获取userId值
-            Context context = GoudongContext.get();
+            Context context = UserContext.get();
             if (context != null && context.getUserId() != null) {
                 createUserId.set(object, context.getUserId());
             } else {
@@ -177,7 +177,7 @@ public class DataBaseAuditListener {
         Object userIdValue = updateUserId.get(object);
         if (userIdValue == null) {
             // 获取userId值
-            Context context = GoudongContext.get();
+            Context context = UserContext.get();
             if (context != null && context.getUserId() != null) {
                 // 在此处使用当前用户id或默认用户id
                 updateUserId.set(object, context.getUserId());
