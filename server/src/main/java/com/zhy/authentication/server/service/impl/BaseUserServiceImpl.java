@@ -1,11 +1,11 @@
 package com.zhy.authentication.server.service.impl;
 
+import com.goudong.boot.web.core.ClientException;
 import com.goudong.core.util.tree.v2.Tree;
+import com.zhy.authentication.common.core.Jwt;
+import com.zhy.authentication.common.core.UserToken;
 import com.zhy.authentication.server.domain.*;
-import com.zhy.authentication.server.repository.BaseRoleMenuRepository;
-import com.zhy.authentication.server.repository.BaseRoleRepository;
-import com.zhy.authentication.server.repository.BaseUserRepository;
-import com.zhy.authentication.server.repository.BaseUserRoleRepository;
+import com.zhy.authentication.server.repository.*;
 import com.zhy.authentication.server.service.BaseRoleMenuService;
 import com.zhy.authentication.server.service.BaseUserService;
 import com.zhy.authentication.server.service.dto.BaseMenuDTO;
@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,6 +46,9 @@ public class BaseUserServiceImpl implements BaseUserService {
 
     @Resource
     private BaseRoleRepository baseRoleRepository;
+
+    @Resource
+    private BaseAppRepository baseAppRepository;
 
     @Resource
     private BaseUserMapper baseUserMapper;
@@ -136,10 +140,17 @@ public class BaseUserServiceImpl implements BaseUserService {
                     }
                 });
 
+        BaseApp baseApp = baseAppRepository.findById(baseUser.getAppId()).orElseThrow(() -> ClientException.client("应用无效"));
+
+        // 创建token
+        Jwt jwt = new Jwt(1, TimeUnit.DAYS, baseApp.getSecret());
+        String token = jwt.generateToken(new UserToken(baseUser.getId(), baseApp.getId(), baseUser.getUsername(), roles));
+
         LoginDTO loginDTO = new LoginDTO();
         loginDTO.setId(baseUser.getId());
         loginDTO.setAppId(baseUser.getAppId());
         loginDTO.setUsername(baseUser.getUsername());
+        loginDTO.setToken(token);
         loginDTO.setRoles(roles);
 
         List<BaseMenuDTO> menuDTOS = new ArrayList<>(menuMap.values());
