@@ -7,13 +7,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 类描述：
- * jwt
+ * jwt创建和解析
  * @author cfl
  * @version 1.0
  * @date 2023/7/19 17:00
@@ -21,68 +22,76 @@ import java.util.concurrent.TimeUnit;
 public class Jwt {
 
     /**
-     * 过期时长
+     * 游戏时长
      */
     private long time;
 
     /**
-     * 过期时长单位
+     * 时长单位
      */
     private TimeUnit timeUnit;
 
     /**
-     * 生成token密钥
+     * 密钥
      */
     private String secretKey;
 
+    /**
+     * 构造方法，创建jwt实例
+     * @param time
+     * @param timeUnit
+     * @param secretKey
+     */
     public Jwt(long time, TimeUnit timeUnit, String secretKey) {
         this.time = time;
         this.timeUnit = timeUnit;
-        this.secretKey = secretKey;
+        try {
+            this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * 生成jwt
-     * @param subject 键值对
+     * 创建token
+     * @param userToken
      * @return
      */
-    public String generateToken(Map subject) {
+    public String generateToken(UserToken userToken) {
         Date now = new Date();
-
-        Date expiration = new Date(now.getTime() + this.timeUnit.toMillis(this.time));
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String subjectJsonStr;
+        Date expiration = new Date(now.getTime() + this.timeUnit.toMillis(time));
         try {
-            subjectJsonStr = objectMapper.writeValueAsString(subject);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String userTokenJson = objectMapper.writeValueAsString(userToken);
+
+            return Jwts.builder()
+                    .setSubject(userTokenJson)
+                    .setIssuedAt(now)
+                    .setExpiration(expiration)
+                    .signWith(SignatureAlgorithm.HS256, this.secretKey)
+                    .compact();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-
-        return Jwts.builder()
-                .setSubject(subjectJsonStr)
-                .setIssuedAt(now)
-                .setExpiration(expiration)
-                .signWith(SignatureAlgorithm.HS256, this.secretKey)
-                .compact();
     }
 
     /**
      * 解析token
-     * @param jwt
-     * @return 创建token时的subject
+     * @param token
+     * @return
      */
-    public Map<String, Object> parseToken(String jwt) {
-        Claims body = Jwts.parser()
-                .setSigningKey(this.secretKey)
-                .parseClaimsJws(jwt)
-                .getBody();
+    public UserToken parseToken(String token) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            Map map = objectMapper.readValue(body.getSubject(), Map.class);
-            return map;
+
+            Claims body = Jwts.parser()
+                    .setSigningKey(this.secretKey)
+                    .parseClaimsJws(token)
+                    .getBody();
+            return objectMapper.readValue(body.getSubject(), UserToken.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 }

@@ -21,12 +21,28 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.goudong</groupId>
+            <artifactId>goudong-core</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>${pom.basedir}/lib/goudong-core-1.0.0.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <version>2.3.8.RELEASE</version>
+            <groupId>com.goudong</groupId>
+            <artifactId>goudong-web-spring-boot-starter</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>${pom.basedir}/lib/goudong-web-spring-boot-starter-1.0.0.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.goudong</groupId>
+            <artifactId>goudong-redis-spring-boot-starter</artifactId>
+            <scope>system</scope>
+            <version>1.0</version>
+            <systemPath>${pom.basedir}/lib/goudong-redis-spring-boot-starter-1.0.0.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
