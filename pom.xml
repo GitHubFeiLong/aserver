@@ -8,10 +8,10 @@
     <artifactId>authentication</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+
     <modules>
         <module>server</module>
         <module>commons</module>
-        <!--        <module>client</module>-->
     </modules>
 
     <properties>
