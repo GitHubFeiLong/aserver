@@ -1,5 +1,6 @@
 package com.zhy.authentication.server.service;
 
+import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,10 +15,10 @@ public interface BaseAppService {
     /**
      * Save a baseApp.
      *
-     * @param baseAppDTO the entity to save.
+     * @param req the entity to save.
      * @return the persisted entity.
      */
-    BaseAppDTO save(BaseAppDTO baseAppDTO);
+    BaseAppDTO save(BaseAppCreate req);
 
     /**
      * Get all the baseApps.

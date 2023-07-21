@@ -2,6 +2,7 @@ package com.zhy.authentication.server.service.impl;
 
 import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.repository.BaseAppRepository;
+import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.mapper.BaseAppMapper;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service Implementation for managing {@link BaseApp}.
@@ -39,9 +41,12 @@ public class BaseAppServiceImpl implements BaseAppService {
      * @return the persisted entity.
      */
     @Override
-    public BaseAppDTO save(BaseAppDTO baseAppDTO) {
-        log.debug("Request to save BaseApp : {}", baseAppDTO);
-        BaseApp baseApp = baseAppMapper.toEntity(baseAppDTO);
+    public BaseAppDTO save(BaseAppCreate req) {
+        log.debug("Request to save BaseApp : {}", req);
+        BaseApp baseApp = new BaseApp();
+        baseApp.setName(req.getName());
+        baseApp.setRemark(req.getRemark());
+        baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
         baseApp = baseAppRepository.save(baseApp);
         return baseAppMapper.toDto(baseApp);
     }

@@ -1,6 +1,9 @@
 package com.zhy.authentication.server.rest;
 
+import com.goudong.boot.web.core.ClientException;
 import com.goudong.core.lang.Result;
+import com.goudong.core.util.AssertUtil;
+import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import io.swagger.annotations.Api;
@@ -41,11 +44,7 @@ public class BaseAppResource {
      */
     @PostMapping("/base-apps")
     @ApiOperation("新增菜单")
-    public Result<BaseAppDTO> createBaseApp(@Valid @RequestBody BaseAppDTO baseAppDTO) throws URISyntaxException {
-        log.debug("REST request to save BaseApp : {}", baseAppDTO);
-        // if (baseAppDTO.getId() != null) {
-        //     throw new BadRequestAlertException("A new baseApp cannot already have an ID", ENTITY_NAME, "idexists");
-        // }
+    public Result<BaseAppDTO> createBaseApp(@Valid @RequestBody BaseAppCreate req) {
         BaseAppDTO result = baseAppService.save(baseAppDTO);
         return Result.ofSuccess(result);
     }

@@ -9,6 +9,7 @@ import com.zhy.authentication.server.repository.BaseAppRepository;
 import com.zhy.authentication.server.service.BaseUserService;
 import com.zhy.authentication.server.service.dto.MyAuthentication;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -68,7 +69,6 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         // 获取认证用户，并将其设置到 SecurityContext中
         try {
-
             String requestURI = httpServletRequest.getRequestURI();
             // 本次请求是白名单，不需要进行后面的token校验
             AntPathMatcher antPathMatcher = new AntPathMatcher();
@@ -84,11 +84,18 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             /*
                 认证和刷新认证接口不需要添加上下文
              */
-
             Long appId = getAppId(httpServletRequest);
 
             // 设置应用id到请求属性中，供后续使用
             httpServletRequest.setAttribute(HttpHeaderConst.X_APP_ID, appId);
+
+            String authorization = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+            AssertUtil.isNotBlank(authorization, () -> ClientException.clientByUnauthorized());
+            String prefix = "Bearer ";
+            AssertUtil.isTrue(authorization.startsWith(prefix), () -> ClientException.client("请求头" + HttpHeaders.AUTHORIZATION + "格式错误"));
+            String token = authorization.substring(prefix.length());
+
+
 
             // TODO 获取请求对应的用户信息
             MyAuthentication myAuthentication = new MyAuthentication();
