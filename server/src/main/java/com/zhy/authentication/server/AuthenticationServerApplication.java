@@ -2,14 +2,24 @@ package com.zhy.authentication.server;
 
 import com.goudong.boot.redis.EnableCommonsRedisConfig;
 import com.goudong.boot.web.EnableCommonsWebMvcConfig;
+import com.goudong.boot.web.bean.DatabaseKey;
+import com.goudong.boot.web.bean.DatabaseKeyInterface;
+import com.goudong.boot.web.handler.DataIntegrityViolationExceptionHandler;
 import com.zhy.authentication.server.config.LogApplicationStartup;
+import com.zhy.authentication.server.enums.DatabaseKeyEnum;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.util.StopWatch;
+
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 类描述：
@@ -35,5 +45,16 @@ public class AuthenticationServerApplication {
         Environment environment = context.getBean(Environment.class);
         stopWatch.stop();
         LogApplicationStartup.logApplicationStartup(environment, (int)stopWatch.getTotalTimeSeconds());
+    }
+
+    /**
+     * 数据库索引异常配置
+     * @return
+     */
+    @Bean
+    public DatabaseKey databaseKey() {
+        Map<String, String> map = Stream.of(DatabaseKeyEnum.values()).collect(Collectors.toMap(DatabaseKeyInterface::getKey, p -> p.getClientMessage(), (k1, k2) -> k1));
+        DatabaseKey databaseKey = new DatabaseKey(map);
+        return databaseKey;
     }
 }

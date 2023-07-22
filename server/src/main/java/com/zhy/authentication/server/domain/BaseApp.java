@@ -21,7 +21,6 @@ import java.util.Date;
 public class BaseApp extends BasePO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,33 +42,14 @@ public class BaseApp extends BasePO implements Serializable {
     private String name;
 
     /**
+     * 是否激活
+     */
+    @NotNull
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled;
+    /**
      * 备注
      */
     @Column(name = "remark")
     private String remark;
-
-    /**
-     * 创建时间
-     */
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    /**
-     * 最后修改时间
-     */
-    @Column(name = "last_modified_date")
-    private Date lastModifiedDate;
-
-    /**
-     * 创建人
-     */
-    @Column(name = "created_by")
-    private String createdBy;
-
-    /**
-     * 最后修改人
-     */
-    @Column(name = "last_modified_by")
-    private String lastModifiedBy;
-
 }

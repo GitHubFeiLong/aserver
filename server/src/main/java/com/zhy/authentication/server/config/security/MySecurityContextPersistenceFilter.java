@@ -4,12 +4,18 @@ import com.goudong.boot.web.core.BasicException;
 import com.goudong.boot.web.core.ClientException;
 import com.goudong.core.util.AssertUtil;
 import com.goudong.core.util.ListUtil;
+import com.zhy.authentication.common.core.Jwt;
+import com.zhy.authentication.common.core.UserToken;
 import com.zhy.authentication.server.constant.HttpHeaderConst;
 import com.zhy.authentication.server.repository.BaseAppRepository;
+import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.BaseUserService;
+import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.dto.MyAuthentication;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -24,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 类描述：
@@ -33,11 +41,12 @@ import java.util.Optional;
  * @date 2022/1/22 12:59
  */
 @Component
+@Slf4j
 public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
     //~fields
     //==================================================================================================================
     private static List<String> IGNORE_URIS = ListUtil.newArrayList(
-            "/**/authentication/login",
+            "/**/base-user/login",
             "/**/authentication/refresh-token",
             "/**/*.html*",
             "/**/*.css*",
@@ -62,11 +71,17 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
     @Resource
     private BaseUserService baseUserService;
 
+    @Resource
+    private BaseAppService baseAppService;
+
     //~methods
     //==================================================================================================================
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+        Long appId = getAppId(httpServletRequest);
+        // 设置应用id到请求属性中，供后续使用
+        httpServletRequest.setAttribute(HttpHeaderConst.X_APP_ID, appId);
         // 获取认证用户，并将其设置到 SecurityContext中
         try {
             String requestURI = httpServletRequest.getRequestURI();
@@ -84,10 +99,14 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             /*
                 认证和刷新认证接口不需要添加上下文
              */
-            Long appId = getAppId(httpServletRequest);
 
-            // 设置应用id到请求属性中，供后续使用
-            httpServletRequest.setAttribute(HttpHeaderConst.X_APP_ID, appId);
+            BaseAppDTO appDTO = baseAppService.findOne(appId).orElseThrow(() -> ClientException
+                    .builder()
+                    .clientMessageTemplate("应用{}无效")
+                    .clientMessageParams(appId)
+                    .build());
+
+
 
             String authorization = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
             AssertUtil.isNotBlank(authorization, () -> ClientException.clientByUnauthorized());
@@ -95,11 +114,16 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             AssertUtil.isTrue(authorization.startsWith(prefix), () -> ClientException.client("请求头" + HttpHeaders.AUTHORIZATION + "格式错误"));
             String token = authorization.substring(prefix.length());
 
-
+            Jwt jwt = new Jwt(0, TimeUnit.SECONDS, appDTO.getSecret());
+            UserToken userToken = jwt.parseToken(token);
+            log.debug("解析token：{}", userToken);
 
             // TODO 获取请求对应的用户信息
             MyAuthentication myAuthentication = new MyAuthentication();
-            // BaseUserPO baseUserPO = baseUserService.getAuthentication(httpServletRequest);
+            myAuthentication.setId(userToken.getId());
+            myAuthentication.setAppId(userToken.getAppId());
+            myAuthentication.setUsername(userToken.getUsername());
+            myAuthentication.setRoles(userToken.getRoles().stream().map(m -> new SimpleGrantedAuthority(m)).collect(Collectors.toList()));
             // 官网建议，避免跨多个线程的竞态条件
             SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
             emptyContext.setAuthentication(myAuthentication);
@@ -125,4 +149,5 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             throw BasicException.client(String.format("请求头%s=%s无效", HttpHeaderConst.X_APP_ID, appIdStr));
         }
     }
+
 }

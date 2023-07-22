@@ -2,7 +2,6 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="true" />
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -11,14 +10,10 @@
         <module name="commons" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="client" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="commons" options="" />
-      <module name="server" options="" />
+      <module name="commons" options="-extdirs D:\workspace\github\aserver\commons/lib" />
     </option>
   </component>
 </project>

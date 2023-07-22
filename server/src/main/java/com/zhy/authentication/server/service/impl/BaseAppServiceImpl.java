@@ -1,5 +1,8 @@
 package com.zhy.authentication.server.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.goudong.boot.redis.core.RedisTool;
 import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.repository.BaseAppRepository;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
@@ -13,26 +16,30 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.zhy.authentication.server.enums.RedisKeyTemplateProviderEnum.APP_ID;
 
 /**
  * Service Implementation for managing {@link BaseApp}.
  */
 @Service
-@Transactional
 public class BaseAppServiceImpl implements BaseAppService {
 
     private final Logger log = LoggerFactory.getLogger(BaseAppServiceImpl.class);
 
-    private final BaseAppRepository baseAppRepository;
+    @Resource
+    private BaseAppRepository baseAppRepository;
+    @Resource
+    private BaseAppMapper baseAppMapper;
 
-    private final BaseAppMapper baseAppMapper;
+    @Resource
+    private RedisTool redisTool;
 
-    public BaseAppServiceImpl(BaseAppRepository baseAppRepository, BaseAppMapper baseAppMapper) {
-        this.baseAppRepository = baseAppRepository;
-        this.baseAppMapper = baseAppMapper;
-    }
+    @Resource
+    private ObjectMapper objectMapper;
 
     /**
      * Save a baseApp.
@@ -47,6 +54,7 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseApp.setName(req.getName());
         baseApp.setRemark(req.getRemark());
         baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
+        baseApp.setEnabled(false);
         baseApp = baseAppRepository.save(baseApp);
         return baseAppMapper.toDto(baseApp);
     }
@@ -73,11 +81,41 @@ public class BaseAppServiceImpl implements BaseAppService {
      * @return the entity.
      */
     @Override
-    @Transactional(readOnly = true)
+    // @Transactional(readOnly = true)
     public Optional<BaseAppDTO> findOne(Long id) {
         log.debug("Request to get BaseApp : {}", id);
-        return baseAppRepository.findById(id)
-            .map(baseAppMapper::toDto);
+        String key = APP_ID.getFullKey(id);
+        if (redisTool.hasKey(key)) {
+            String appStr = (String)redisTool.get(APP_ID, id);
+            try {
+                BaseAppDTO baseAppDTO = objectMapper.readValue(appStr, BaseAppDTO.class);
+                return Optional.of(baseAppDTO);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        synchronized (this) {
+            if (redisTool.hasKey(key)) {
+                String appStr = (String)redisTool.get(APP_ID, id);
+                try {
+                    BaseAppDTO baseAppDTO = objectMapper.readValue(appStr, BaseAppDTO.class);
+                    return Optional.of(baseAppDTO);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            Optional<BaseAppDTO> baseAppDTO = baseAppRepository.findById(id).map(baseAppMapper::toDto);
+            if (baseAppDTO.isPresent()) {
+                try {
+                    redisTool.set(APP_ID, objectMapper.writeValueAsString(baseAppDTO.get()), id);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            return baseAppDTO;
+        }
     }
 
     /**

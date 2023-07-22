@@ -4,6 +4,7 @@ import com.goudong.boot.web.core.ClientException;
 import com.goudong.core.lang.Result;
 import com.goudong.core.util.AssertUtil;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
+import com.zhy.authentication.server.rest.req.BaseAppUpdate;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import io.swagger.annotations.Api;
@@ -35,40 +36,20 @@ public class BaseAppResource {
         this.baseAppService = baseAppService;
     }
 
-    /**
-     * {@code POST  /base-apps} : Create a new baseApp.
-     *
-     * @param baseAppDTO the baseAppDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new baseAppDTO, or with status {@code 400 (Bad Request)} if the baseApp has already an ID.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
     @PostMapping("/base-apps")
-    @ApiOperation("新增菜单")
+    @ApiOperation("新增")
     public Result<BaseAppDTO> createBaseApp(@Valid @RequestBody BaseAppCreate req) {
-        BaseAppDTO result = baseAppService.save(baseAppDTO);
+        BaseAppDTO result = baseAppService.save(req);
         return Result.ofSuccess(result);
     }
 
-    // /**
-    //  * {@code PUT  /base-apps} : Updates an existing baseApp.
-    //  *
-    //  * @param baseAppDTO the baseAppDTO to update.
-    //  * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated baseAppDTO,
-    //  * or with status {@code 400 (Bad Request)} if the baseAppDTO is not valid,
-    //  * or with status {@code 500 (Internal Server Error)} if the baseAppDTO couldn't be updated.
-    //  * @throws URISyntaxException if the Location URI syntax is incorrect.
-    //  */
-    // @PutMapping("/base-apps")
-    // public ResponseEntity<BaseAppDTO> updateBaseApp(@Valid @RequestBody BaseAppDTO baseAppDTO) throws URISyntaxException {
-    //     log.debug("REST request to update BaseApp : {}", baseAppDTO);
-    //     if (baseAppDTO.getId() == null) {
-    //         throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-    //     }
-    //     BaseAppDTO result = baseAppService.save(baseAppDTO);
-    //     return ResponseEntity.ok()
-    //         .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, baseAppDTO.getId().toString()))
-    //         .body(result);
-    // }
+    @PutMapping("/base-apps")
+    public ResponseEntity<BaseAppDTO> updateBaseApp(@Valid @RequestBody BaseAppUpdate req) {
+        BaseAppDTO result = baseAppService.update(req);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, baseAppDTO.getId().toString()))
+            .body(result);
+    }
     //
     // /**
     //  * {@code GET  /base-apps} : get all the baseApps.

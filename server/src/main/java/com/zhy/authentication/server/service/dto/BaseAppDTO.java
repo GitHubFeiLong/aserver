@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.persistence.Column;
 import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -34,6 +35,13 @@ public class BaseAppDTO implements Serializable {
     @Size(max = 16)
     @ApiModelProperty(value = "应用名称", required = true)
     private String name;
+
+    /**
+     * 是否激活
+     */
+    @NotNull
+    @ApiModelProperty(value = "是否激活", required = true)
+    private Boolean enabled;
 
     /**
      * 备注

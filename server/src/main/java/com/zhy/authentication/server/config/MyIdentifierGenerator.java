@@ -2,7 +2,6 @@ package com.zhy.authentication.server.config;
 
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
-import com.zhy.authentication.server.domain.AbstractAuditingEntity;
 import com.zhy.authentication.server.domain.BasePO;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;

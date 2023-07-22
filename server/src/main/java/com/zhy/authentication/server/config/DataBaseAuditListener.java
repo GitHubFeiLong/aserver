@@ -1,10 +1,10 @@
 package com.zhy.authentication.server.config;
 
 
-import com.zhy.authentication.server.context.Context;
-import com.zhy.authentication.server.context.UserContext;
-import com.zhy.authentication.server.domain.AbstractAuditingEntity;
+import com.zhy.authentication.server.domain.BasePO;
+import com.zhy.authentication.server.service.dto.MyAuthentication;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
@@ -43,7 +43,7 @@ public class DataBaseAuditListener {
     public void prePersist(Object object) {
         // 如果填充字段被分装在一个父类中： Class<?> aClass = object.getClass().getSuperclass();
         Class<?> aClass;
-        if (object.getClass().getSuperclass() == AbstractAuditingEntity.class) {
+        if (object.getClass().getSuperclass() == BasePO.class) {
             aClass = object.getClass().getSuperclass();
         } else {
             aClass = object.getClass();
@@ -53,7 +53,7 @@ public class DataBaseAuditListener {
             fillAppId(object, aClass, APP_ID);
             // 填充创建用户
             fillCreateUser(object, aClass, CREATED_BY);
-            // 填充更新用户id
+            // 填充更新用户
             fillUpdateUser(object, aClass, LAST_MODIFIED_BY);
             // 填充创建时间
             fillCreateTime(object, aClass, CREATED_DATE);
@@ -71,7 +71,7 @@ public class DataBaseAuditListener {
     public void preUpdate(Object object) {
         // 如果填充字段被分装在一个父类中： Class<?> aClass = object.getClass().getSuperclass();
         Class<?> aClass;
-        if (object.getClass().getSuperclass() == AbstractAuditingEntity.class) {
+        if (object.getClass().getSuperclass() == BasePO.class) {
             aClass = object.getClass().getSuperclass();
         } else {
             aClass = object.getClass();
@@ -112,24 +112,30 @@ public class DataBaseAuditListener {
      * @throws NoSuchFieldException
      * @throws IllegalAccessException
      */
-    protected void fillAppId(Object object, Class<?> aClass, String propertyName) throws NoSuchFieldException, IllegalAccessException, IntrospectionException, InvocationTargetException, NoSuchMethodException {
-        Field appId = aClass.getDeclaredField(propertyName);
-        appId.setAccessible(true);
+    protected void fillAppId(Object object, Class<?> aClass, String propertyName) throws IllegalAccessException, IntrospectionException, InvocationTargetException, NoSuchMethodException {
+        try {
+            Field appId = aClass.getDeclaredField(propertyName);
+            appId.setAccessible(true);
 
-        // 没有特意设置用户id，就需要设置用户id
-        Object appIdValue = appId.get(object);
-        if (appIdValue == null) {
-            // 获取userId值
-            Context context = UserContext.get();
-            if (context != null && context.getAppId() != null) {
-                appId.set(object, context.getAppId());
-            } else {
-                // 注意：反射时，不会自动装箱和拆箱
-                // 在此处使用当前用户id或默认用户id
-                Long id = 0L;
-                appId.set(object, id);
+            // 没有特意设置用户id，就需要设置用户id
+            Object appIdValue = appId.get(object);
+            if (appIdValue == null) {
+                // 获取userId值
+                MyAuthentication myAuthentication = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+                if (myAuthentication != null && myAuthentication.getAppId() != null) {
+                    appId.set(object, myAuthentication.getAppId());
+                } else {
+                    // 注意：反射时，不会自动装箱和拆箱
+                    // 在此处使用当前用户id或默认用户id
+                    Long id = 0L;
+                    appId.set(object, id);
+                }
             }
+        } catch (NoSuchFieldException e) {
+            log.warn("没有appId");
         }
+
+
     }
 
     /**
@@ -149,9 +155,9 @@ public class DataBaseAuditListener {
         Object userIdValue = createUserId.get(object);
         if (userIdValue == null) {
             // 获取userId值
-            Context context = UserContext.get();
-            if (context != null && context.getUserId() != null) {
-                createUserId.set(object, context.getUserId());
+            MyAuthentication context = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+            if (context != null && context.getUsername() != null) {
+                createUserId.set(object, context.getUsername());
             } else {
                 // 注意：反射时，不会自动装箱和拆箱
                 // 在此处使用当前用户id或默认用户id
@@ -177,10 +183,10 @@ public class DataBaseAuditListener {
         Object userIdValue = updateUserId.get(object);
         if (userIdValue == null) {
             // 获取userId值
-            Context context = UserContext.get();
-            if (context != null && context.getUserId() != null) {
+            MyAuthentication context = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+            if (context != null && context.getUsername() != null) {
                 // 在此处使用当前用户id或默认用户id
-                updateUserId.set(object, context.getUserId());
+                updateUserId.set(object, context.getUsername());
             } else {
                 // 在此处使用当前用户id或默认用户id
                 Long id = 0L;
