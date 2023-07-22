@@ -168,7 +168,7 @@ public class DataBaseAuditListener {
     }
 
     /**
-     * 填充更新用户id
+     * 填充更新用户信息，只有数据有改动才会执行
      *
      * @param object
      * @param aClass
@@ -180,20 +180,15 @@ public class DataBaseAuditListener {
         Field updateUserId = aClass.getDeclaredField(propertyName);
         updateUserId.setAccessible(true);
 
-        Object userIdValue = updateUserId.get(object);
-        if (userIdValue == null) {
-            // 获取userId值
-            MyAuthentication context = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
-            if (context != null && context.getUsername() != null) {
-                // 在此处使用当前用户id或默认用户id
-                updateUserId.set(object, context.getUsername());
-            } else {
-                // 在此处使用当前用户id或默认用户id
-                Long id = 0L;
-                updateUserId.set(object, id);
-            }
+        // 获取用户上下文
+        MyAuthentication context = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+        if (context != null && context.getUsername() != null) {
+            // 在此处使用当前用户
+            updateUserId.set(object, context.getUsername());
+        } else {
+            // 在此处使用当前用户id或默认用户id
+            updateUserId.set(object, null);
         }
-
     }
 
     /**

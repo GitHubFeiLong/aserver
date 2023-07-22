@@ -45,9 +45,7 @@ import java.util.stream.Collectors;
 public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
     //~fields
     //==================================================================================================================
-    private static List<String> IGNORE_URIS = ListUtil.newArrayList(
-            "/**/base-user/login",
-            "/**/authentication/refresh-token",
+    private static List<String> STATIC_URIS = ListUtil.newArrayList(
             "/**/*.html*",
             "/**/*.css*",
             "/**/*.js*",
@@ -56,6 +54,9 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             "/**/api-docs*",
             "/druid/**",
             "/actuator/**"
+    );
+    private static List<String> IGNORE_URIS = ListUtil.newArrayList(
+            "/**/base-user/login"
     );
 
     /**
@@ -79,34 +80,38 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+        String requestURI = httpServletRequest.getRequestURI();
+        // 本次请求是白名单，不需要进行后面的token校验
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+        boolean staticUri = STATIC_URIS.stream()
+                .filter(f -> antPathMatcher.match(f, requestURI))
+                .findFirst().isPresent();
+        if (staticUri) {
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            return;
+        }
+
         Long appId = getAppId(httpServletRequest);
         // 设置应用id到请求属性中，供后续使用
         httpServletRequest.setAttribute(HttpHeaderConst.X_APP_ID, appId);
         // 获取认证用户，并将其设置到 SecurityContext中
         try {
-            String requestURI = httpServletRequest.getRequestURI();
-            // 本次请求是白名单，不需要进行后面的token校验
-            AntPathMatcher antPathMatcher = new AntPathMatcher();
             Optional<String> first = IGNORE_URIS.stream()
                     .filter(f -> antPathMatcher.match(f, requestURI))
                     .findFirst();
-
             if (first.isPresent()) {
                 filterChain.doFilter(httpServletRequest, httpServletResponse);
                 return;
             }
-
             /*
                 认证和刷新认证接口不需要添加上下文
              */
 
             BaseAppDTO appDTO = baseAppService.findOne(appId).orElseThrow(() -> ClientException
                     .builder()
-                    .clientMessageTemplate("应用{}无效")
+                    .clientMessageTemplate("应用id:{}无效")
                     .clientMessageParams(appId)
                     .build());
-
-
 
             String authorization = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
             AssertUtil.isNotBlank(authorization, () -> ClientException.clientByUnauthorized());

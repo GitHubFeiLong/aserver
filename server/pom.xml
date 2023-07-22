@@ -138,7 +138,10 @@
             <artifactId>mapstruct-processor</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>cn.zhxu</groupId>
+            <artifactId>bean-searcher-boot-starter</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

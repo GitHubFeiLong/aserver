@@ -1,14 +1,18 @@
 package com.zhy.authentication.server.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goudong.boot.redis.core.RedisTool;
+import com.goudong.boot.web.core.ClientException;
 import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.repository.BaseAppRepository;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
+import com.zhy.authentication.server.rest.req.BaseAppUpdate;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.mapper.BaseAppMapper;
+import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -56,6 +60,38 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
         baseApp.setEnabled(false);
         baseApp = baseAppRepository.save(baseApp);
+        return baseAppMapper.toDto(baseApp);
+    }
+
+    /**
+     * 修改
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public BaseAppDTO update(BaseAppUpdate req) {
+        BaseApp baseApp = baseAppRepository.findById(req.getId()).orElseThrow(() -> ClientException
+                .builder()
+                .clientMessageTemplate("应用id:{}不存在")
+                .clientMessageParams(req.getId())
+                .build()
+        );
+        if (StringUtils.isNotBlank(req.getName())) {
+            baseApp.setName(req.getName());
+        }
+
+        if (req.getRemark() != null) {
+            baseApp.setRemark(req.getRemark());
+        }
+
+        if (req.getEnabled() != null) {
+            baseApp.setEnabled(req.getEnabled());
+        }
+
+        baseAppRepository.save(baseApp);
+
+        redisTool.deleteKey(APP_ID, id);
         return baseAppMapper.toDto(baseApp);
     }
 
@@ -118,6 +154,7 @@ public class BaseAppServiceImpl implements BaseAppService {
         }
     }
 
+
     /**
      * Delete the baseApp by id.
      *
@@ -127,5 +164,6 @@ public class BaseAppServiceImpl implements BaseAppService {
     public void delete(Long id) {
         log.debug("Request to delete BaseApp : {}", id);
         baseAppRepository.deleteById(id);
+        redisTool.deleteKey(APP_ID, id);
     }
 }
