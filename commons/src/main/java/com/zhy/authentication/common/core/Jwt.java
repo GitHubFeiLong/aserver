@@ -83,7 +83,6 @@ public class Jwt {
     public UserToken parseToken(String token) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-
             Claims body = Jwts.parser()
                     .setSigningKey(this.secretKey)
                     .parseClaimsJws(token)

@@ -1,7 +1,9 @@
 package com.zhy.authentication.server.service;
 
+import com.goudong.core.lang.PageResult;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseAppPage;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,4 +52,11 @@ public interface BaseAppService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * 分页
+     * @param req
+     * @return
+     */
+    PageResult page(BaseAppPage req);
 }

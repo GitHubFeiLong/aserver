@@ -4,13 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Objects;
 
 /**
  * A DTO for the {@link com.zhy.authentication.server.domain.BaseUser} entity.
@@ -62,7 +59,7 @@ public class BaseUserDTO implements Serializable {
      * 有效截止时间
      */
     @NotNull
-    @ApiModelProperty(value = "锁定状态：true 锁定；false 未锁定", required = true)
+    @ApiModelProperty(value = "有效截止时间", required = false)
     private Date validTime;
 
     /**

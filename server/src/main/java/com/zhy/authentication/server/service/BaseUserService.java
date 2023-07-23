@@ -1,5 +1,6 @@
 package com.zhy.authentication.server.service;
 
+import com.zhy.authentication.server.rest.req.BaseUserCreate;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
 import com.zhy.authentication.server.service.dto.LoginDTO;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,13 @@ public interface BaseUserService {
      * @return the persisted entity.
      */
     BaseUserDTO save(BaseUserDTO baseUserDTO);
+
+    /**
+     * 新增用户
+     * @param req
+     * @return
+     */
+    BaseUserDTO save(BaseUserCreate req);
 
     /**
      * Get all the baseUsers.

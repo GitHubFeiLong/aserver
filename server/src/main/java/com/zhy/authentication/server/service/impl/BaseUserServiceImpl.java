@@ -1,29 +1,36 @@
 package com.zhy.authentication.server.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.goudong.boot.web.core.ClientException;
-import com.goudong.core.util.tree.v2.Tree;
+import com.goudong.core.util.AssertUtil;
 import com.zhy.authentication.common.core.Jwt;
 import com.zhy.authentication.common.core.UserToken;
-import com.zhy.authentication.server.domain.*;
+import com.zhy.authentication.server.domain.BaseApp;
+import com.zhy.authentication.server.domain.BaseMenu;
+import com.zhy.authentication.server.domain.BaseUser;
+import com.zhy.authentication.server.domain.BaseUserRole;
 import com.zhy.authentication.server.repository.*;
-import com.zhy.authentication.server.service.BaseRoleMenuService;
+import com.zhy.authentication.server.rest.req.BaseUserCreate;
 import com.zhy.authentication.server.service.BaseUserService;
 import com.zhy.authentication.server.service.dto.BaseMenuDTO;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
 import com.zhy.authentication.server.service.dto.LoginDTO;
+import com.zhy.authentication.server.service.dto.MyAuthentication;
 import com.zhy.authentication.server.service.mapper.BaseMenuMapper;
 import com.zhy.authentication.server.service.mapper.BaseUserMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -56,6 +63,11 @@ public class BaseUserServiceImpl implements BaseUserService {
     @Resource
     private BaseMenuMapper baseMenuMapper;
 
+    @Resource
+    private HttpServletRequest request;
+
+    @Resource
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Save a baseUser.
@@ -68,6 +80,28 @@ public class BaseUserServiceImpl implements BaseUserService {
         log.debug("Request to save BaseUser : {}", baseUserDTO);
         BaseUser baseUser = baseUserMapper.toEntity(baseUserDTO);
         baseUser = baseUserRepository.save(baseUser);
+        return baseUserMapper.toDto(baseUser);
+    }
+
+    /**
+     * 新增用户
+     * @param req
+     * @return
+     */
+    @Override
+    public BaseUserDTO save(BaseUserCreate req) {
+        MyAuthentication authentication = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+        // 不是超级管理员不能新增其它app用户只能新增自己app用户
+        if (!authentication.superAdmin()) {
+            AssertUtil.isEquals(authentication.getAppId(), req.getAppId(), () -> ClientException.clientByForbidden("无权添加应用用户"));
+        }
+
+        BaseUser baseUser = BeanUtil.copyProperties(req, BaseUser.class);
+        // 密码加密
+        baseUser.setPassword(passwordEncoder.encode(req.getPassword()));
+        baseUser.setEnabled(true);
+        baseUser.setLocked(false);
+        baseUserRepository.save(baseUser);
         return baseUserMapper.toDto(baseUser);
     }
 

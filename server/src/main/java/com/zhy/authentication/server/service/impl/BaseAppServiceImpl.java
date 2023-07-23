@@ -1,17 +1,24 @@
 package com.zhy.authentication.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.zhxu.bs.BeanSearcher;
+import cn.zhxu.bs.SearchResult;
+import cn.zhxu.bs.util.MapUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goudong.boot.redis.core.RedisTool;
 import com.goudong.boot.web.core.ClientException;
+import com.goudong.core.lang.PageResult;
+import com.goudong.core.lang.Result;
 import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.repository.BaseAppRepository;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseAppPage;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.mapper.BaseAppMapper;
+import com.zhy.authentication.server.util.PageResultUtil;
 import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +52,9 @@ public class BaseAppServiceImpl implements BaseAppService {
 
     @Resource
     private ObjectMapper objectMapper;
+
+    @Resource
+    private BeanSearcher beanSearcher;
 
     /**
      * Save a baseApp.
@@ -91,7 +102,7 @@ public class BaseAppServiceImpl implements BaseAppService {
 
         baseAppRepository.save(baseApp);
 
-        redisTool.deleteKey(APP_ID, id);
+        redisTool.deleteKey(APP_ID, req.getId());
         return baseAppMapper.toDto(baseApp);
     }
 
@@ -165,5 +176,16 @@ public class BaseAppServiceImpl implements BaseAppService {
         log.debug("Request to delete BaseApp : {}", id);
         baseAppRepository.deleteById(id);
         redisTool.deleteKey(APP_ID, id);
+    }
+
+    @Override
+    public PageResult page(BaseAppPage req) {
+        Map<String, Object> build = MapUtils.builder()
+                .page(req.getPage(), req.getSize())
+                .field(BaseAppPage::getName, req.getName())
+                .orderBy(BaseAppPage::getId).asc()
+                .build();
+        SearchResult<BaseAppPage> search = beanSearcher.search(BaseAppPage.class,  build);
+        return PageResultUtil.convert(search, req);
     }
 }

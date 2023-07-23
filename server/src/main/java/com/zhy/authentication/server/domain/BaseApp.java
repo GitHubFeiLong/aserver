@@ -1,19 +1,20 @@
 package com.zhy.authentication.server.domain;
 
 
+import cn.zhxu.bs.bean.SearchBean;
 import lombok.Data;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * 应用表
  */
+@SearchBean(tables="base_app ba")
 @Entity
 @Table(name = "base_app")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)

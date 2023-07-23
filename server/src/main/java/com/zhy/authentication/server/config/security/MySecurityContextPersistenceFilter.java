@@ -123,7 +123,6 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             UserToken userToken = jwt.parseToken(token);
             log.debug("解析token：{}", userToken);
 
-            // TODO 获取请求对应的用户信息
             MyAuthentication myAuthentication = new MyAuthentication();
             myAuthentication.setId(userToken.getId());
             myAuthentication.setAppId(userToken.getAppId());

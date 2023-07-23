@@ -1,11 +1,16 @@
 package com.zhy.authentication.server.service.dto;
 
+import com.goudong.boot.web.core.ClientException;
+import com.goudong.core.util.AssertUtil;
 import lombok.Data;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+
+import static com.zhy.authentication.server.constant.RoleConst.ROLE_SUPER_ADMIN;
 
 /**
  * 类描述：
@@ -84,5 +89,19 @@ public class MyAuthentication implements Authentication {
     @Override
     public String getName() {
         return this.username;
+    }
+
+    /**
+     * 是否是超级管理员
+     * @return true 超级管理员，false 不是超级管理员
+     */
+    public boolean superAdmin() {
+        return this.roles.stream().filter(f -> Objects.equals(f.getAuthority(), ROLE_SUPER_ADMIN)).findFirst().isPresent();
+    }
+    /**
+     * 断言
+     */
+    public void assertSuperAdmin() {
+        AssertUtil.isTrue(superAdmin(), () -> ClientException.clientByForbidden());
     }
 }

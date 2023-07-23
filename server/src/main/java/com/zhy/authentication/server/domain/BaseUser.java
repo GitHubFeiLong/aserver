@@ -67,7 +67,6 @@ public class BaseUser extends BasePO implements Serializable {
     /**
      * 有效截止时间
      */
-    @NotNull
     @Column(name = "valid_time", nullable = false)
     private Date validTime;
 
