@@ -46,8 +46,8 @@ public class BaseUser extends BasePO implements Serializable {
      * 密码
      */
     @NotNull
-    @Size(max = 128)
-    @Column(name = "password", length = 128, nullable = false)
+    @Size(max = 64)
+    @Column(name = "password", length = 64, nullable = false)
     private String password;
 
     /**

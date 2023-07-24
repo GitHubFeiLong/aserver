@@ -110,7 +110,11 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
                     .clientMessageTemplate("X-App-Id:{}无效")
                     .clientMessageParams(appId)
                     .build());
-            AssertUtil.isTrue(appDTO.getEnabled(), () -> ClientException.clientByUnauthorized("应用未激活"));
+            AssertUtil.isTrue(appDTO.getEnabled(), () -> ClientException
+                    .builder()
+                    .clientMessageTemplate("X-App-Id:{}未激活")
+                    .clientMessageParams(appId)
+                    .build());
 
             String authorization = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
             AssertUtil.isNotBlank(authorization, () -> ClientException.clientByUnauthorized());

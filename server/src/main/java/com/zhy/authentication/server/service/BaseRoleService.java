@@ -1,5 +1,7 @@
 package com.zhy.authentication.server.service;
 
+import com.zhy.authentication.server.rest.req.BaseRoleCreate;
+import com.zhy.authentication.server.rest.req.BaseRoleUpdate;
 import com.zhy.authentication.server.service.dto.BaseRoleDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,12 +14,18 @@ import java.util.Optional;
 public interface BaseRoleService {
 
     /**
-     * Save a baseRole.
-     *
-     * @param baseRoleDTO the entity to save.
-     * @return the persisted entity.
+     * 新增角色
+     * @param req
+     * @return
      */
-    BaseRoleDTO save(BaseRoleDTO baseRoleDTO);
+    BaseRoleDTO save(BaseRoleCreate req);
+
+    /**
+     * 修改角色
+     * @param req
+     * @return
+     */
+    BaseRoleDTO save(BaseRoleUpdate req);
 
     /**
      * Get all the baseRoles.
@@ -37,9 +45,11 @@ public interface BaseRoleService {
     Optional<BaseRoleDTO> findOne(Long id);
 
     /**
-     * Delete the "id" baseRole.
-     *
-     * @param id the id of the entity.
+     * 删除角色
+     * @param id
+     * @return
      */
-    void delete(Long id);
+    boolean delete(Long id);
+
+
 }

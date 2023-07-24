@@ -9,10 +9,10 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
- * 新增用户
+ * 新增角色
  */
 @Data
-public class BaseUserCreate implements Serializable {
+public class BaseRoleCreate implements Serializable {
 
     /**
      * 应用id
@@ -23,20 +23,12 @@ public class BaseUserCreate implements Serializable {
     private Long appId;
 
     /**
-     * 用户名
+     * 名称
      */
     @NotNull
     @Size(max = 16)
-    @ApiModelProperty(value = "用户名", required = true)
-    private String username;
-
-    /**
-     * 密码
-     */
-    @NotNull
-    @Size(max = 32)
-    @ApiModelProperty(value = "密码", required = true)
-    private String password;
+    @ApiModelProperty(value = "名称", required = true)
+    private String name;
 
     /**
      * 备注

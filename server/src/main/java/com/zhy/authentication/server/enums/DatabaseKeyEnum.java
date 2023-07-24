@@ -20,7 +20,7 @@ public enum DatabaseKeyEnum implements DatabaseKeyInterface {
     //==================================================================================================================
     UK_APP_NAME("uk_app_name", "应用已存在"),
 
-
+    UK_ROLE_NAME("uk_base_role_app_id_name", "角色已存在"),
 
     /**
      * 用户表 邮箱唯一索引

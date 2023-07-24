@@ -23,6 +23,11 @@ public enum RedisKeyTemplateProviderEnum  implements RedisKeyProvider {
      * app
      */
     APP_ID("server:app:${appId}", DataType.STRING, String.class, 24, TimeUnit.HOURS),
+
+    /**
+     * app下拉
+     */
+    APP_DROP_DOWN("server:app:drop-down", DataType.LIST, String.class, 24, TimeUnit.HOURS),
     ;
 
     public String key;

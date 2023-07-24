@@ -1,8 +1,14 @@
 package com.zhy.authentication.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.zhxu.bs.BeanSearcher;
+import cn.zhxu.bs.SearchResult;
+import cn.zhxu.bs.operator.InList;
+import cn.zhxu.bs.util.MapUtils;
 import com.goudong.boot.web.core.ClientException;
+import com.goudong.core.lang.PageResult;
 import com.goudong.core.util.AssertUtil;
+import com.goudong.core.util.CollectionUtil;
 import com.zhy.authentication.common.core.Jwt;
 import com.zhy.authentication.common.core.UserToken;
 import com.zhy.authentication.server.domain.BaseApp;
@@ -11,6 +17,9 @@ import com.zhy.authentication.server.domain.BaseUser;
 import com.zhy.authentication.server.domain.BaseUserRole;
 import com.zhy.authentication.server.repository.*;
 import com.zhy.authentication.server.rest.req.BaseUserCreate;
+import com.zhy.authentication.server.rest.req.BaseUserUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseUserPage;
+import com.zhy.authentication.server.rest.req.search.SelectUsersRoleNames;
 import com.zhy.authentication.server.service.BaseUserService;
 import com.zhy.authentication.server.service.dto.BaseMenuDTO;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
@@ -18,6 +27,9 @@ import com.zhy.authentication.server.service.dto.LoginDTO;
 import com.zhy.authentication.server.service.dto.MyAuthentication;
 import com.zhy.authentication.server.service.mapper.BaseMenuMapper;
 import com.zhy.authentication.server.service.mapper.BaseUserMapper;
+import com.zhy.authentication.server.util.PageResultUtil;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -31,6 +43,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -69,19 +82,8 @@ public class BaseUserServiceImpl implements BaseUserService {
     @Resource
     private PasswordEncoder passwordEncoder;
 
-    /**
-     * Save a baseUser.
-     *
-     * @param baseUserDTO the entity to save.
-     * @return the persisted entity.
-     */
-    @Override
-    public BaseUserDTO save(BaseUserDTO baseUserDTO) {
-        log.debug("Request to save BaseUser : {}", baseUserDTO);
-        BaseUser baseUser = baseUserMapper.toEntity(baseUserDTO);
-        baseUser = baseUserRepository.save(baseUser);
-        return baseUserMapper.toDto(baseUser);
-    }
+    @Resource
+    private BeanSearcher beanSearcher;
 
     /**
      * 新增用户
@@ -101,6 +103,35 @@ public class BaseUserServiceImpl implements BaseUserService {
         baseUser.setPassword(passwordEncoder.encode(req.getPassword()));
         baseUser.setEnabled(true);
         baseUser.setLocked(false);
+        baseUserRepository.save(baseUser);
+        return baseUserMapper.toDto(baseUser);
+    }
+
+    /**
+     * 修改用户
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public BaseUserDTO save(BaseUserUpdate req) {
+        MyAuthentication authentication = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+
+        BaseUser baseUser = baseUserRepository.findById(req.getId()).orElseThrow(() -> ClientException.client("用户不存在"));
+
+        // 不是超级管理员不能新增其它app用户只能修改自己app用户
+        if (!authentication.superAdmin()) {
+            AssertUtil.isEquals(authentication.getAppId(), baseUser.getAppId(), () -> ClientException.clientByForbidden("无权修改应用用户"));
+        }
+        baseUser.setRemark(req.getRemark());
+        if (StringUtils.isNotBlank(req.getPassword())) {
+            baseUser.setPassword(passwordEncoder.encode(req.getPassword()));
+        }
+
+        baseUser.setEnabled(Optional.ofNullable(req.getEnabled()).orElseGet(() -> baseUser.getLocked()));
+        baseUser.setLocked(Optional.ofNullable(req.getLocked()).orElseGet(() -> baseUser.getLocked()));
+        baseUser.setValidTime(Optional.ofNullable(req.getValidTime()).orElseGet(() -> baseUser.getValidTime()));
+
         baseUserRepository.save(baseUser);
         return baseUserMapper.toDto(baseUser);
     }
@@ -140,9 +171,20 @@ public class BaseUserServiceImpl implements BaseUserService {
      * @param id the id of the entity.
      */
     @Override
-    public void delete(Long id) {
+    public Boolean delete(Long id) {
         log.debug("Request to delete BaseUser : {}", id);
+        MyAuthentication authentication = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+
+        BaseUser baseUser = baseUserRepository.findById(id).orElseThrow(() -> ClientException.client("用户不存在"));
+
+        // 不是超级管理员不能新增其它app用户只能删除自己app用户
+        if (!authentication.superAdmin()) {
+            AssertUtil.isEquals(authentication.getAppId(), baseUser.getAppId(), () -> ClientException.clientByForbidden("无权删除应用用户"));
+        }
+
         baseUserRepository.deleteById(id);
+
+        return true;
     }
 
     /**
@@ -196,5 +238,63 @@ public class BaseUserServiceImpl implements BaseUserService {
         loginDTO.setMenus(menuDTOS);
 
         return loginDTO;
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public PageResult page(BaseUserPage req) {
+        Map<String, Object> build = MapUtils.builder()
+                .page(req.getPage(), req.getSize())
+                .field(BaseUserPage::getAppId, req.getAppId())
+                .build();
+        SearchResult<BaseUserPage> search = beanSearcher.search(BaseUserPage.class,  build);
+
+        if (search.getTotalCount().longValue() > 0) {
+            // 用户id集合
+            List<Long> userIds = search.getDataList().stream().map(BaseUserPage::getId).collect(Collectors.toList());
+
+            // 查询角色
+            List<SelectUsersRoleNames> selectUsersRoleNames = beanSearcher.searchAll(SelectUsersRoleNames.class, MapUtils.builder()
+                    .field(SelectUsersRoleNames::getUserId, userIds).op(InList.class)
+                    .build());
+
+            Map<Long, List<SelectUsersRoleNames>> map = selectUsersRoleNames.stream().collect(Collectors.groupingBy(SelectUsersRoleNames::getUserId));
+
+            search.getDataList().stream().forEach(p -> {
+                List<SelectUsersRoleNames> roles = map.get(p.getId());
+                if (CollectionUtil.isNotEmpty(roles)) {
+                    p.setRoles(roles);
+                }
+            });
+        }
+
+        return PageResultUtil.convert(search, req);
+    }
+
+    /**
+     * 查询用户id详情
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public BaseUserDTO getById(Long id) {
+        BaseUser baseUser = baseUserRepository.findById(id).orElseThrow(() -> ClientException.client("用户不存在"));
+        MyAuthentication authentication = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+        // 不是超级管理员
+        if (!authentication.superAdmin()) {
+            AssertUtil.isEquals(authentication.getAppId(), baseUser.getAppId(), () -> ClientException.client("用户不存在"));
+        }
+
+        BaseUserDTO baseUserDTO = baseUserMapper.toDto(baseUser);
+
+        // 设置角色
+
+        return baseUserDTO;
     }
 }

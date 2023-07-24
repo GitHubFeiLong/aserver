@@ -1,6 +1,6 @@
 package com.zhy.authentication.server.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.zhxu.bs.BeanSearcher;
 import cn.zhxu.bs.SearchResult;
 import cn.zhxu.bs.util.MapUtils;
@@ -8,13 +8,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goudong.boot.redis.core.RedisTool;
 import com.goudong.boot.web.core.ClientException;
+import com.goudong.boot.web.core.ServerException;
 import com.goudong.core.lang.PageResult;
-import com.goudong.core.lang.Result;
+import com.zhy.authentication.server.constant.RoleConst;
 import com.zhy.authentication.server.domain.BaseApp;
+import com.zhy.authentication.server.domain.BaseRole;
+import com.zhy.authentication.server.domain.BaseUser;
+import com.zhy.authentication.server.domain.BaseUserRole;
 import com.zhy.authentication.server.repository.BaseAppRepository;
+import com.zhy.authentication.server.repository.BaseRoleRepository;
+import com.zhy.authentication.server.repository.BaseUserRepository;
+import com.zhy.authentication.server.repository.BaseUserRoleRepository;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
 import com.zhy.authentication.server.rest.req.search.BaseAppPage;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDownPage;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.mapper.BaseAppMapper;
@@ -24,10 +33,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,6 +68,21 @@ public class BaseAppServiceImpl implements BaseAppService {
     @Resource
     private BeanSearcher beanSearcher;
 
+    @Resource
+    private BaseRoleRepository baseRoleRepository;
+
+    @Resource
+    private BaseUserRepository baseUserRepository;
+
+    @Resource
+    private BaseUserRoleRepository baseUserRoleRepository;
+
+    @Resource
+    private TransactionTemplate transactionTemplate;
+
+    @Resource
+    private PasswordEncoder passwordEncoder;
+
     /**
      * Save a baseApp.
      *
@@ -66,11 +93,49 @@ public class BaseAppServiceImpl implements BaseAppService {
     public BaseAppDTO save(BaseAppCreate req) {
         log.debug("Request to save BaseApp : {}", req);
         BaseApp baseApp = new BaseApp();
+        baseApp.setId(IdUtil.getSnowflake().nextId());
         baseApp.setName(req.getName());
         baseApp.setRemark(req.getRemark());
         baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
-        baseApp.setEnabled(false);
-        baseApp = baseAppRepository.save(baseApp);
+        baseApp.setEnabled(true);
+
+
+        // 新增管理用户
+        BaseUser baseUser = new BaseUser();
+        baseUser.setAppId(baseApp.getId());
+        baseUser.setUsername("admin");
+        baseUser.setPassword(passwordEncoder.encode("123456"));
+        baseUser.setEnabled(true);
+        baseUser.setLocked(false);
+        baseUser.setRemark("创建应用时，初始管理员");
+
+        // 新增角色
+        BaseRole baseRole = new BaseRole();
+        baseRole.setAppId(baseApp.getId());
+        baseRole.setName(RoleConst.ROLE_ADMIN);
+        baseRole.setRemark("创建应用时，初始管理员角色");
+
+
+        BaseUserRole baseUserRole = new BaseUserRole();
+        baseUserRole.setUser(baseUser);
+        baseUserRole.setRole(baseRole);
+
+
+        transactionTemplate.execute(status -> {
+            try {
+                // 新增应用
+                baseAppRepository.save(baseApp);
+                // 新增管理用户
+                baseUserRepository.save(baseUser);
+                baseRoleRepository.save(baseRole);
+                baseUserRoleRepository.save(baseUserRole);
+                return true;
+            } catch (Exception e) {
+                status.setRollbackOnly();
+                throw ServerException.server("创建应用失败", e);
+            }
+        });
+
         return baseAppMapper.toDto(baseApp);
     }
 
@@ -128,7 +193,6 @@ public class BaseAppServiceImpl implements BaseAppService {
      * @return the entity.
      */
     @Override
-    // @Transactional(readOnly = true)
     public Optional<BaseAppDTO> findOne(Long id) {
         log.debug("Request to get BaseApp : {}", id);
         String key = APP_ID.getFullKey(id);
@@ -178,6 +242,11 @@ public class BaseAppServiceImpl implements BaseAppService {
         redisTool.deleteKey(APP_ID, id);
     }
 
+    /**
+     * 分页
+     * @param req
+     * @return
+     */
     @Override
     public PageResult page(BaseAppPage req) {
         Map<String, Object> build = MapUtils.builder()
@@ -187,5 +256,35 @@ public class BaseAppServiceImpl implements BaseAppService {
                 .build();
         SearchResult<BaseAppPage> search = beanSearcher.search(BaseAppPage.class,  build);
         return PageResultUtil.convert(search, req);
+    }
+
+    /**
+     * 下拉
+     * @param req
+     * @return
+     */
+    @Override
+    List<BaseRoleDropDown> pageDropDown(BaseRoleDropDown req) {
+
+    }
+
+    /**
+     * 下拉分页
+     *
+     * @param req
+     * @return
+     */
+
+    public PageResult pageDropDown(BaseRoleDropDownPage req) {
+
+
+
+        Map<String, Object> build = MapUtils.builder()
+                .page(req.getPage(), req.getSize())
+                .field(BaseRoleDropDownPage::getName, req.getName())
+                .build();
+        SearchResult<BaseAppPage> search = beanSearcher.search(BaseAppPage.class,  build);
+        return PageResultUtil.convert(search, req);
+        return null;
     }
 }

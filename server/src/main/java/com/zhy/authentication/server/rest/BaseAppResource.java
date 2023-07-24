@@ -8,6 +8,8 @@ import com.goudong.core.lang.Result;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
 import com.zhy.authentication.server.rest.req.search.BaseAppPage;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDownPage;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.util.PageResultUtil;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,6 +45,7 @@ public class BaseAppResource {
         BaseAppDTO result = baseAppService.save(req);
         return Result.ofSuccess(result);
     }
+
     @PutMapping("/base-app")
     @ApiOperation("修改")
     public Result<BaseAppDTO> update(@Valid @RequestBody BaseAppUpdate req) {
@@ -60,5 +64,11 @@ public class BaseAppResource {
     @ApiOperation("分页")
     public Result<PageResult<BaseAppPage>> page(@Validated BaseAppPage req) {
         return Result.ofSuccess(baseAppService.page(req));
+    }
+
+    @GetMapping("/drop-down")
+    @ApiOperation("下拉分页")
+    public Result<List<BaseRoleDropDown>> pageDropDown(@Validated BaseRoleDropDown req) {
+        return Result.ofSuccess(baseAppService.pageDropDown(req));
     }
 }

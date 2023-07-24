@@ -1,6 +1,9 @@
 package com.zhy.authentication.server.service;
 
+import com.goudong.core.lang.PageResult;
 import com.zhy.authentication.server.rest.req.BaseUserCreate;
+import com.zhy.authentication.server.rest.req.BaseUserUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
 import com.zhy.authentication.server.service.dto.LoginDTO;
 import org.springframework.data.domain.Page;
@@ -14,19 +17,18 @@ import java.util.Optional;
 public interface BaseUserService {
 
     /**
-     * Save a baseUser.
-     *
-     * @param baseUserDTO the entity to save.
-     * @return the persisted entity.
-     */
-    BaseUserDTO save(BaseUserDTO baseUserDTO);
-
-    /**
      * 新增用户
      * @param req
      * @return
      */
     BaseUserDTO save(BaseUserCreate req);
+
+    /**
+     * 修改用户
+     * @param req
+     * @return
+     */
+    BaseUserDTO save(BaseUserUpdate req);
 
     /**
      * Get all the baseUsers.
@@ -50,7 +52,7 @@ public interface BaseUserService {
      *
      * @param id the id of the entity.
      */
-    void delete(Long id);
+    Boolean delete(Long id);
 
     /**
      * 登录信息
@@ -58,4 +60,19 @@ public interface BaseUserService {
      * @return
      */
     LoginDTO login(Long id);
+
+    /**
+     * 分页查询
+     * @param req
+     * @return
+     */
+    PageResult page(BaseUserPage req);
+
+    /**
+     * 查询用户id详情
+     * @param id
+     * @return
+     */
+    @Deprecated
+    BaseUserDTO getById(Long id);
 }

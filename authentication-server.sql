@@ -71,14 +71,14 @@ CREATE TABLE `base_role`
     `id`                 bigint(20) NOT NULL AUTO_INCREMENT,
     `app_id`             bigint(20) NOT NULL COMMENT '应用id',
     `name`               varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '角色名称',
-    `remark`             varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
-    `created_date`       datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
-    `last_modified_date` datetime(0) NULL DEFAULT NULL COMMENT '最后修改时间',
-    `created_by`         varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '创建人',
-    `last_modified_by`   varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '最后修改人',
-    PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '角色表' ROW_FORMAT = Dynamic;
-
+    `remark`             varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注',
+    `created_date`       datetime                                                DEFAULT NULL COMMENT '创建时间',
+    `last_modified_date` datetime                                                DEFAULT NULL COMMENT '最后修改时间',
+    `created_by`         varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '创建人',
+    `last_modified_by`   varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '最后修改人',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE KEY `uk_base_role_app_id_name` (`app_id`,`name`) USING BTREE COMMENT '角色应用下唯一'
+) ENGINE=InnoDB AUTO_INCREMENT=1683401958217322497 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='角色表';
 -- ----------------------------
 -- Table structure for base_role_menu
 -- ----------------------------
@@ -107,11 +107,11 @@ CREATE TABLE `base_user`
 (
     `id`                 bigint(20) NOT NULL AUTO_INCREMENT,
     `app_id`             bigint(20) NOT NULL COMMENT '应用id',
-    `username`           varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '用户名',
-    `password`           varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '密码',
+    `username`           varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户名',
+    `password`           varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '密码',
     `valid_time`         datetime(6) DEFAULT NULL COMMENT '过期时间，不填永久有效',
-    `enabled`            bit(1)                                                  NOT NULL COMMENT '激活状态：true 激活；false 未激活',
-    `locked`             bit(1)                                                  NOT NULL COMMENT '锁定状态：true 锁定；false 未锁定',
+    `enabled`            bit(1)                                                 NOT NULL COMMENT '激活状态：true 激活；false 未激活',
+    `locked`             bit(1)                                                 NOT NULL COMMENT '锁定状态：true 锁定；false 未锁定',
     `remark`             varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '备注',
     `created_date`       datetime                                                DEFAULT NULL COMMENT '创建时间',
     `last_modified_date` datetime                                                DEFAULT NULL COMMENT '最后修改时间',
@@ -144,10 +144,19 @@ SET
 FOREIGN_KEY_CHECKS = 1;
 
 
-INSERT INTO `base_app`(`id`, `secret`, `name`, `enabled`, `remark`, `created_date`, `last_modified_date`, `created_by`, `last_modified_by`) VALUES (1, '0b32758851f04e92bc0f874a4f82c4c2', 'app', b'1', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `base_app`(`id`, `secret`, `name`, `enabled`, `remark`, `created_date`, `last_modified_date`, `created_by`,
+                       `last_modified_by`)
+VALUES (1, '0b32758851f04e92bc0f874a4f82c4c2', 'app', b'1', NULL, NULL, NULL, NULL, NULL);
 
-INSERT INTO `base_user`(`id`, `app_id`, `username`, `password`, `valid_time`, `enabled`, `locked`, `remark`, `created_date`, `last_modified_date`, `created_by`, `last_modified_by`) VALUES (1, 1, 'admin', '$2a$10$G6ZOnXyHRuHM2eukWyrW6.sMMrtNZDl4URljrWR23EhvMOXY6JTWq', NULL, b'1', b'0', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `base_user`(`id`, `app_id`, `username`, `password`, `valid_time`, `enabled`, `locked`, `remark`,
+                        `created_date`, `last_modified_date`, `created_by`, `last_modified_by`)
+VALUES (1, 1, 'sadmin', '$2a$10$G6ZOnXyHRuHM2eukWyrW6.sMMrtNZDl4URljrWR23EhvMOXY6JTWq', NULL, b'1', b'0', NULL, NULL,
+        NULL, NULL, NULL);
 
-INSERT INTO `base_role`(`id`, `app_id`, `name`, `remark`, `created_date`, `last_modified_date`, `created_by`, `last_modified_by`) VALUES (1, 1, 'ROLE_SUPER_ADMIN', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `base_role`(`id`, `app_id`, `name`, `remark`, `created_date`, `last_modified_date`, `created_by`,
+                        `last_modified_by`)
+VALUES (1, 1, 'ROLE_SUPER_ADMIN', NULL, NULL, NULL, NULL, NULL);
 
-INSERT INTO `authentication-server`.`base_user_role`(`id`, `user_id`, `role_id`, `created_by`, `created_date`, `last_modified_by`, `last_modified_date`) VALUES (1, 1, 1, NULL, NULL, NULL, NULL);
+INSERT INTO `authentication-server`.`base_user_role`(`id`, `user_id`, `role_id`, `created_by`, `created_date`,
+                                                     `last_modified_by`, `last_modified_date`)
+VALUES (1, 1, 1, NULL, NULL, NULL, NULL);

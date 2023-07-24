@@ -1,7 +1,11 @@
 package com.zhy.authentication.server.rest;
 
+import com.goudong.core.lang.PageResult;
 import com.goudong.core.lang.Result;
 import com.zhy.authentication.server.rest.req.BaseUserCreate;
+import com.zhy.authentication.server.rest.req.BaseUserUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseAppPage;
+import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.service.BaseUserService;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
 import io.swagger.annotations.Api;
@@ -60,9 +64,28 @@ public class BaseUserResource {
         return Result.ofSuccess(baseUserService.save(req));
     }
 
-    // @PostMapping("/base-user")
-    // @ApiOperation(value = "新增用户")
-    // public Result<BaseUserDTO> create(@RequestBody @Validated BaseUserCreate req) {
-    //     return Result.ofSuccess(baseUserService.save(req));
-    // }
+    // @GetMapping("/base-user/{id}")
+    @ApiOperation(value = "查询用户详情", hidden = true)
+    @Deprecated
+    public Result<BaseUserDTO> getById(@PathVariable Long id) {
+        return Result.ofSuccess(baseUserService.getById(id));
+    }
+
+    @PutMapping("/base-user")
+    @ApiOperation(value = "修改用户")
+    public Result<BaseUserDTO> update(@RequestBody @Validated BaseUserUpdate req) {
+        return Result.ofSuccess(baseUserService.save(req));
+    }
+
+    @DeleteMapping("/base-user/{id}")
+    @ApiOperation(value = "删除用户")
+    public Result<Boolean> delete(@PathVariable Long id) {
+        return Result.ofSuccess(baseUserService.delete(id));
+    }
+
+    @GetMapping("/base-users")
+    @ApiOperation(value = "分页用户")
+    public Result<PageResult<BaseUserPage>> page(@Validated BaseUserPage req) {
+        return Result.ofSuccess(baseUserService.page(req));
+    }
 }

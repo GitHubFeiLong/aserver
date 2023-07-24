@@ -4,10 +4,13 @@ import com.goudong.core.lang.PageResult;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
 import com.zhy.authentication.server.rest.req.search.BaseAppPage;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDownPage;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -59,4 +62,11 @@ public interface BaseAppService {
      * @return
      */
     PageResult page(BaseAppPage req);
+
+    /**
+     * 下拉
+     * @param req
+     * @return
+     */
+    List<BaseRoleDropDown> pageDropDown(BaseRoleDropDown req);
 }

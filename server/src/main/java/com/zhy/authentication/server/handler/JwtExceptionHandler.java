@@ -5,6 +5,7 @@ import com.goudong.boot.web.core.BasicException;
 import com.goudong.boot.web.core.ClientException;
 import com.goudong.boot.web.handler.HandlerInterface;
 import com.goudong.core.lang.Result;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
@@ -34,7 +35,7 @@ public class JwtExceptionHandler implements HandlerInterface{
     @ExceptionHandler(SignatureException.class)
     public Result<BasicException> signatureExceptionDispose(SignatureException exception) {
         BasicException basicException = ClientException.builder()
-                .clientMessage("令牌已失效,请重新登录")
+                .clientMessage("解析签名失败")
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .code("401")
                 .build();
@@ -43,8 +44,8 @@ public class JwtExceptionHandler implements HandlerInterface{
         return Result.ofFail(basicException);
     }
 
-    @ExceptionHandler(Exception.class)
-    public Result<BasicException> expiredJwtExceptionDispose(Exception exception) {
+    @ExceptionHandler(ExpiredJwtException.class)
+    public Result<BasicException> expiredJwtExceptionDispose(ExpiredJwtException exception) {
         BasicException basicException = ClientException.builder()
                 .clientMessage("令牌已失效,请重新登录")
                 .status(HttpStatus.UNAUTHORIZED.value())
