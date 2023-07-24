@@ -1,12 +1,15 @@
 package com.zhy.authentication.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.lang.Assert;
 import cn.zhxu.bs.BeanSearcher;
+import cn.zhxu.bs.SearchResult;
 import cn.zhxu.bs.util.MapUtils;
 import com.goudong.boot.redis.core.RedisTool;
 import com.goudong.boot.web.core.ClientException;
 import com.goudong.core.lang.PageResult;
 import com.goudong.core.util.AssertUtil;
+import com.zhy.authentication.server.constant.RoleConst;
 import com.zhy.authentication.server.domain.BaseRole;
 import com.zhy.authentication.server.repository.BaseRoleRepository;
 import com.zhy.authentication.server.repository.BaseUserRoleRepository;
@@ -18,6 +21,7 @@ import com.zhy.authentication.server.service.BaseRoleService;
 import com.zhy.authentication.server.service.dto.BaseRoleDTO;
 import com.zhy.authentication.server.service.dto.MyAuthentication;
 import com.zhy.authentication.server.service.mapper.BaseRoleMapper;
+import com.zhy.authentication.server.util.PageResultUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -29,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.zhy.authentication.server.enums.RedisKeyTemplateProviderEnum.ROLE_DROP_DOWN;
@@ -57,20 +62,6 @@ public class BaseRoleServiceImpl implements BaseRoleService {
     @Resource
     private BeanSearcher beanSearcher;
 
-    // /**
-    //  * Save a baseRole.
-    //  *
-    //  * @param baseRoleDTO the entity to save.
-    //  * @return the persisted entity.
-    //  */
-    // @Override
-    // public BaseRoleDTO save(BaseRoleDTO baseRoleDTO) {
-    //     log.debug("Request to save BaseRole : {}", baseRoleDTO);
-    //     BaseRole baseRole = baseRoleMapper.toEntity(baseRoleDTO);
-    //     baseRole = baseRoleRepository.save(baseRole);
-    //     return baseRoleMapper.toDto(baseRole);
-    // }
-
     /**
      * 新增角色
      *
@@ -79,6 +70,7 @@ public class BaseRoleServiceImpl implements BaseRoleService {
      */
     @Override
     public BaseRoleDTO save(BaseRoleCreate req) {
+        Assert.isFalse(Objects.equals(RoleConst.ROLE_SUPER_ADMIN, req.getName()), () -> ClientException.client("添加角色失败"));
         MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
         // 不是超级管理员
         if (!authentication.superAdmin()) {
@@ -168,7 +160,19 @@ public class BaseRoleServiceImpl implements BaseRoleService {
 
     @Override
     public PageResult page(BaseRolePage req) {
-        return null;
+        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        // 不是超级管理员
+        if (!authentication.superAdmin()) {
+            AssertUtil.isEquals(authentication.getAppId(), req.getAppId(), () -> ClientException.clientByForbidden("无权访问该应用"));
+        }
+
+        Map<String, Object> build = MapUtils.builder()
+                .page(req.getPage(), req.getSize())
+                .field(BaseRolePage::getAppId, req.getAppId())
+                .build();
+        SearchResult<BaseRolePage> search = beanSearcher.search(BaseRolePage.class,  build);
+
+        return PageResultUtil.convert(search, req);
     }
 
     /**

@@ -10,6 +10,7 @@ import com.goudong.boot.redis.core.RedisTool;
 import com.goudong.boot.web.core.ClientException;
 import com.goudong.boot.web.core.ServerException;
 import com.goudong.core.lang.PageResult;
+import com.goudong.core.util.ListUtil;
 import com.zhy.authentication.server.constant.RoleConst;
 import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.domain.BaseRole;
@@ -25,6 +26,7 @@ import com.zhy.authentication.server.rest.req.search.BaseAppDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseAppPage;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
+import com.zhy.authentication.server.service.dto.MyAuthentication;
 import com.zhy.authentication.server.service.mapper.BaseAppMapper;
 import com.zhy.authentication.server.util.PageResultUtil;
 import org.slf4j.Logger;
@@ -34,6 +36,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -241,7 +244,16 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public List<BaseAppDropDown> pageDropDown(BaseAppDropDown req) {
-        // redis key
+        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        // 不是超级管理员只返回自身应用
+        if (!authentication.superAdmin()) {
+            BaseAppDTO baseAppDTO = findOne(authentication.getAppId()).get();
+            BaseAppDropDown baseAppDropDown = new BaseAppDropDown();
+            baseAppDropDown.setId(baseAppDTO.getId());
+            baseAppDropDown.setName(baseAppDTO.getName());
+            return ListUtil.newArrayList(baseAppDropDown);
+        }
+        // 超级管理员返回所有应用
         String key = APP_DROP_DOWN.getFullKey();
         if (redisTool.hasKey(key)) {
             return redisTool.getList(APP_DROP_DOWN, BaseAppDropDown.class);

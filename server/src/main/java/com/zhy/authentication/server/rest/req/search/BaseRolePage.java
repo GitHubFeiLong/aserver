@@ -1,14 +1,12 @@
 package com.zhy.authentication.server.rest.req.search;
 
 import cn.zhxu.bs.bean.DbField;
-import cn.zhxu.bs.bean.DbIgnore;
 import cn.zhxu.bs.bean.SearchBean;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.ArrayList;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 类描述：
@@ -18,7 +16,7 @@ import java.util.List;
  * @date 2023/7/22 19:59
  */
 @SearchBean(
-        tables="base_role",
+        tables="base_role br inner join base_app ba on br.app_id = ba.id",
         orderBy = "ba.id desc, bu. created_date desc"
 )
 @Data
@@ -26,7 +24,8 @@ public class BaseRolePage extends BasePage {
     //~fields
     //==================================================================================================================
 
-    @ApiModelProperty(value = "应用id")
+    @NotNull
+    @ApiModelProperty(value = "应用id", required = true)
     @DbField(value = "ba.id")
     private Long appId;
 
@@ -34,35 +33,19 @@ public class BaseRolePage extends BasePage {
     @DbField("ba.name")
     private String appName;
 
-    @ApiModelProperty("用户名")
-    @DbField("bu.id")
+    @ApiModelProperty("角色id")
+    @DbField("br.id")
     private Long id;
 
-    @ApiModelProperty("用户名")
-    @DbField("bu.username")
-    private String username;
-
-    @ApiModelProperty("用户过期时间")
-    @DbField("bu.valid_time")
-    private Date validTime;
-
-    @ApiModelProperty("激活状态")
-    @DbField("bu.enabled")
-    private Boolean enabled;
-
-    @ApiModelProperty("锁定状态")
-    @DbField("bu.locked")
-    private Boolean locked;
+    @ApiModelProperty("角色名")
+    @DbField("br.name")
+    private String name;
 
     @ApiModelProperty("备注")
-    @DbField("bu.remark")
+    @DbField("br.remark")
     private String remark;
 
-    @ApiModelProperty("创建时间")
-    @DbField("bu.created_date")
+    @ApiModelProperty("角色创建时间")
+    @DbField("br.created_date")
     private Date createdDate;
-
-    @ApiModelProperty("角色")
-    @DbIgnore
-    private List<SelectUsersRoleNames> roles = new ArrayList<>(0);
 }

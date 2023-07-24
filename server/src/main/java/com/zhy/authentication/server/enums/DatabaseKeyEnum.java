@@ -16,11 +16,24 @@ import org.slf4j.LoggerFactory;
 @Getter
 public enum DatabaseKeyEnum implements DatabaseKeyInterface {
 
-    //~ base_app
+    //~
     //==================================================================================================================
+    /**
+     * 应用名唯一
+     */
     UK_APP_NAME("uk_app_name", "应用已存在"),
 
+    /**
+     * 应用下用户名唯一
+     */
+    UK_USER_USERNAME("uk_app_id_username", "用户已存在"),
+
+    /**
+     * 应用下角色名唯一
+     */
     UK_ROLE_NAME("uk_base_role_app_id_name", "角色已存在"),
+
+
 
     /**
      * 用户表 邮箱唯一索引
