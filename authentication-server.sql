@@ -142,3 +142,12 @@ CREATE TABLE `base_user_role`
 
 SET
 FOREIGN_KEY_CHECKS = 1;
+
+
+INSERT INTO `base_app`(`id`, `secret`, `name`, `enabled`, `remark`, `created_date`, `last_modified_date`, `created_by`, `last_modified_by`) VALUES (1, '0b32758851f04e92bc0f874a4f82c4c2', 'app', b'1', NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `base_user`(`id`, `app_id`, `username`, `password`, `valid_time`, `enabled`, `locked`, `remark`, `created_date`, `last_modified_date`, `created_by`, `last_modified_by`) VALUES (1, 1, 'admin', '$2a$10$G6ZOnXyHRuHM2eukWyrW6.sMMrtNZDl4URljrWR23EhvMOXY6JTWq', NULL, b'1', b'0', NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `base_role`(`id`, `app_id`, `name`, `remark`, `created_date`, `last_modified_date`, `created_by`, `last_modified_by`) VALUES (1, 1, 'ROLE_SUPER_ADMIN', NULL, NULL, NULL, NULL, NULL);
+
+INSERT INTO `authentication-server`.`base_user_role`(`id`, `user_id`, `role_id`, `created_by`, `created_date`, `last_modified_by`, `last_modified_date`) VALUES (1, 1, 1, NULL, NULL, NULL, NULL);

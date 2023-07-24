@@ -2,6 +2,7 @@ logging:
   level:
     ROOT: INFO
     cn.zhxu.bs: DEBUG
+    com.goudong: DEBUG
     com.zhy.authentication.server: DEBUG
 
 server:

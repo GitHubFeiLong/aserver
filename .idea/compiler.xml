@@ -14,7 +14,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="commons" options="-extdirs D:\workspace\github\aserver\commons/lib" />
+      <module name="commons" options="-extdirs D:\workspace\work\authentication\commons/lib" />
     </option>
   </component>
 </project>

@@ -12,6 +12,7 @@ import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.BaseUserService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.dto.MyAuthentication;
+import io.jsonwebtoken.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +57,7 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             "/actuator/**"
     );
     private static List<String> IGNORE_URIS = ListUtil.newArrayList(
-            "/**/base-user/login"
+            "/**/user/login"
     );
 
     /**
@@ -103,15 +104,13 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
                 filterChain.doFilter(httpServletRequest, httpServletResponse);
                 return;
             }
-            /*
-                认证和刷新认证接口不需要添加上下文
-             */
 
             BaseAppDTO appDTO = baseAppService.findOne(appId).orElseThrow(() -> ClientException
                     .builder()
-                    .clientMessageTemplate("应用id:{}无效")
+                    .clientMessageTemplate("X-App-Id:{}无效")
                     .clientMessageParams(appId)
                     .build());
+            AssertUtil.isTrue(appDTO.getEnabled(), () -> ClientException.clientByUnauthorized("应用未激活"));
 
             String authorization = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
             AssertUtil.isNotBlank(authorization, () -> ClientException.clientByUnauthorized());

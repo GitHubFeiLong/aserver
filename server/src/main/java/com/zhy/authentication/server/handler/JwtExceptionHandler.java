@@ -1,4 +1,4 @@
-package com.zhy.authentication.server.config;
+package com.zhy.authentication.server.handler;
 
 
 import com.goudong.boot.web.core.BasicException;
@@ -12,10 +12,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * 类描述：
+ * Jwt异常处理
+ * @author cfl
+ * @date 2023/7/24 9:16
+ * @version 1.0
+ */
 @Slf4j
+@Order(0)
 @RestControllerAdvice
-public class GlobalExceptionHandler implements HandlerInterface{
-    public GlobalExceptionHandler() {
+public class JwtExceptionHandler implements HandlerInterface{
+    public JwtExceptionHandler() {
     }
 
     /**

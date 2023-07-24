@@ -4,12 +4,12 @@ import com.goudong.boot.redis.EnableCommonsRedisConfig;
 import com.goudong.boot.web.EnableCommonsWebMvcConfig;
 import com.goudong.boot.web.bean.DatabaseKey;
 import com.goudong.boot.web.bean.DatabaseKeyInterface;
-import com.goudong.boot.web.handler.DataIntegrityViolationExceptionHandler;
-import com.zhy.authentication.server.config.LogApplicationStartup;
+import com.goudong.boot.web.core.ErrorAttributesService;
+import com.goudong.boot.web.core.LogApplicationStartup;
+import com.zhy.authentication.server.config.MyErrorAttributes;
 import com.zhy.authentication.server.enums.DatabaseKeyEnum;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +17,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.util.StopWatch;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,4 +58,17 @@ public class AuthenticationServerApplication {
         DatabaseKey databaseKey = new DatabaseKey(map);
         return databaseKey;
     }
+
+    /**
+     * <pre>
+     *     @EnableCommonsWebMvcConfig 加在了启动类上，会导致goudong-web-spring-boot-starter会优先加载jar里面Bean
+     * </pre>
+     * @param request
+     * @return
+     */
+    @Bean
+    public ErrorAttributesService errorAttributesService(HttpServletRequest request) {
+        return new MyErrorAttributes(request);
+    }
+
 }
