@@ -4,7 +4,7 @@ import com.goudong.core.lang.PageResult;
 import com.goudong.core.lang.Result;
 import com.zhy.authentication.server.rest.req.BaseUserCreate;
 import com.zhy.authentication.server.rest.req.BaseUserUpdate;
-import com.zhy.authentication.server.rest.req.search.BaseAppPage;
+import com.zhy.authentication.server.rest.req.search.BaseUserDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.service.BaseUserService;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
@@ -17,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 
 /**
@@ -87,5 +88,11 @@ public class BaseUserResource {
     @ApiOperation(value = "分页用户")
     public Result<PageResult<BaseUserPage>> page(@Validated BaseUserPage req) {
         return Result.ofSuccess(baseUserService.page(req));
+    }
+
+    @GetMapping("/base-user/drop-down")
+    @ApiOperation(value = "用户下拉")
+    public Result<List<BaseUserDropDown>> dropDown(BaseUserDropDown req) {
+        return Result.ofSuccess(baseUserService.dropDown(req));
     }
 }

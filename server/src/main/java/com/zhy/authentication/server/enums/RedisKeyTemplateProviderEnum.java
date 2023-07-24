@@ -1,6 +1,8 @@
 package com.zhy.authentication.server.enums;
 
 import com.goudong.boot.redis.core.RedisKeyProvider;
+import com.zhy.authentication.server.rest.req.search.BaseAppDropDown;
+import com.zhy.authentication.server.rest.req.search.BaseUserDropDown;
 import org.springframework.data.redis.connection.DataType;
 
 import java.util.Optional;
@@ -27,7 +29,19 @@ public enum RedisKeyTemplateProviderEnum  implements RedisKeyProvider {
     /**
      * app下拉
      */
-    APP_DROP_DOWN("server:app:drop-down", DataType.LIST, String.class, 24, TimeUnit.HOURS),
+    APP_DROP_DOWN("server:app:drop-down", DataType.LIST, BaseAppDropDown.class, 24, TimeUnit.HOURS),
+
+    // 缓存用户
+    //==================================================================================================================
+    /**
+     * 用户下拉
+     */
+    USER_DROP_DOWN("server:user:drop-down:${appId}", DataType.LIST, BaseUserDropDown.class, 24, TimeUnit.HOURS),
+
+
+    // 缓存角色
+    //==================================================================================================================
+    ROLE_DROP_DOWN("server:role:drop-down:${appId}", DataType.LIST, BaseUserDropDown.class, 24, TimeUnit.HOURS),
     ;
 
     public String key;

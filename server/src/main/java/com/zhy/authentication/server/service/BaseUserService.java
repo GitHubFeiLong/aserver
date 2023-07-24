@@ -3,12 +3,14 @@ package com.zhy.authentication.server.service;
 import com.goudong.core.lang.PageResult;
 import com.zhy.authentication.server.rest.req.BaseUserCreate;
 import com.zhy.authentication.server.rest.req.BaseUserUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseUserDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
 import com.zhy.authentication.server.service.dto.LoginDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -75,4 +77,11 @@ public interface BaseUserService {
      */
     @Deprecated
     BaseUserDTO getById(Long id);
+
+    /**
+     * 用户下拉选
+     * @param req
+     * @return
+     */
+    List<BaseUserDropDown> dropDown(BaseUserDropDown req);
 }

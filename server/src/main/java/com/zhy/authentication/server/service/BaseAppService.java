@@ -3,12 +3,9 @@ package com.zhy.authentication.server.service;
 import com.goudong.core.lang.PageResult;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseAppDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseAppPage;
-import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
-import com.zhy.authentication.server.rest.req.search.BaseRoleDropDownPage;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,45 +16,35 @@ import java.util.Optional;
 public interface BaseAppService {
 
     /**
-     * 新增
+     * 新增应用
      * @param req
      * @return
      */
     BaseAppDTO save(BaseAppCreate req);
 
     /**
-     * 修改
+     * 修改应用
      * @param req
      * @return
      */
     BaseAppDTO update(BaseAppUpdate req);
 
     /**
-     * Get all the baseApps.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    Page<BaseAppDTO> findAll(Pageable pageable);
-
-
-    /**
-     * Get the "id" baseApp.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
+     * 根据id查询应用
+     * @param id
+     * @return
      */
     Optional<BaseAppDTO> findOne(Long id);
 
     /**
-     * Delete the "id" baseApp.
-     *
-     * @param id the id of the entity.
+     * 删除应用
+     * @param id
+     * @return
      */
     void delete(Long id);
 
     /**
-     * 分页
+     * 应用分页
      * @param req
      * @return
      */
@@ -68,5 +55,5 @@ public interface BaseAppService {
      * @param req
      * @return
      */
-    List<BaseRoleDropDown> pageDropDown(BaseRoleDropDown req);
+    List<BaseAppDropDown> pageDropDown(BaseAppDropDown req);
 }

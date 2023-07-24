@@ -21,18 +21,19 @@ import com.zhy.authentication.server.repository.BaseUserRepository;
 import com.zhy.authentication.server.repository.BaseUserRoleRepository;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseAppDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseAppPage;
-import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
-import com.zhy.authentication.server.rest.req.search.BaseRoleDropDownPage;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.mapper.BaseAppMapper;
 import com.zhy.authentication.server.util.PageResultUtil;
-import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.zhy.authentication.server.enums.RedisKeyTemplateProviderEnum.APP_DROP_DOWN;
 import static com.zhy.authentication.server.enums.RedisKeyTemplateProviderEnum.APP_ID;
 
 /**
@@ -84,10 +86,9 @@ public class BaseAppServiceImpl implements BaseAppService {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * Save a baseApp.
-     *
-     * @param baseAppDTO the entity to save.
-     * @return the persisted entity.
+     * 新增应用
+     * @param req
+     * @return
      */
     @Override
     public BaseAppDTO save(BaseAppCreate req) {
@@ -98,7 +99,6 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseApp.setRemark(req.getRemark());
         baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
         baseApp.setEnabled(true);
-
 
         // 新增管理用户
         BaseUser baseUser = new BaseUser();
@@ -120,7 +120,6 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseUserRole.setUser(baseUser);
         baseUserRole.setRole(baseRole);
 
-
         transactionTemplate.execute(status -> {
             try {
                 // 新增应用
@@ -129,6 +128,8 @@ public class BaseAppServiceImpl implements BaseAppService {
                 baseUserRepository.save(baseUser);
                 baseRoleRepository.save(baseRole);
                 baseUserRoleRepository.save(baseUserRole);
+
+                cleanCache(baseApp.getId());
                 return true;
             } catch (Exception e) {
                 status.setRollbackOnly();
@@ -140,8 +141,7 @@ public class BaseAppServiceImpl implements BaseAppService {
     }
 
     /**
-     * 修改
-     *
+     * 修改应用
      * @param req
      * @return
      */
@@ -153,44 +153,20 @@ public class BaseAppServiceImpl implements BaseAppService {
                 .clientMessageParams(req.getId())
                 .build()
         );
-        if (StringUtils.isNotBlank(req.getName())) {
-            baseApp.setName(req.getName());
-        }
 
-        if (req.getRemark() != null) {
-            baseApp.setRemark(req.getRemark());
-        }
-
-        if (req.getEnabled() != null) {
-            baseApp.setEnabled(req.getEnabled());
-        }
-
+        baseApp.setName(Optional.ofNullable(req.getName()).orElseGet(() -> baseApp.getName()));
+        baseApp.setRemark(Optional.ofNullable(req.getRemark()).orElseGet(() -> baseApp.getRemark()));
+        baseApp.setEnabled(Optional.ofNullable(req.getEnabled()).orElseGet(() -> baseApp.getEnabled()));
         baseAppRepository.save(baseApp);
 
-        redisTool.deleteKey(APP_ID, req.getId());
+        cleanCache(req.getId());
         return baseAppMapper.toDto(baseApp);
     }
 
     /**
-     * Get all the baseApps.
-     *
-     * @param pageable the pagination information.
-     * @return the list of entities.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public Page<BaseAppDTO> findAll(Pageable pageable) {
-        log.debug("Request to get all BaseApps");
-        return baseAppRepository.findAll(pageable)
-            .map(baseAppMapper::toDto);
-    }
-
-
-    /**
-     * Get one baseApp by id.
-     *
-     * @param id the id of the entity.
-     * @return the entity.
+     * 根据id查询应用
+     * @param id
+     * @return
      */
     @Override
     public Optional<BaseAppDTO> findOne(Long id) {
@@ -231,19 +207,19 @@ public class BaseAppServiceImpl implements BaseAppService {
 
 
     /**
-     * Delete the baseApp by id.
-     *
-     * @param id the id of the entity.
+     * 删除应用
+     * @param id
+     * @return
      */
     @Override
     public void delete(Long id) {
         log.debug("Request to delete BaseApp : {}", id);
         baseAppRepository.deleteById(id);
-        redisTool.deleteKey(APP_ID, id);
+        cleanCache(id);
     }
 
     /**
-     * 分页
+     * 应用分页
      * @param req
      * @return
      */
@@ -264,27 +240,39 @@ public class BaseAppServiceImpl implements BaseAppService {
      * @return
      */
     @Override
-    List<BaseRoleDropDown> pageDropDown(BaseRoleDropDown req) {
+    public List<BaseAppDropDown> pageDropDown(BaseAppDropDown req) {
+        // redis key
+        String key = APP_DROP_DOWN.getFullKey();
+        if (redisTool.hasKey(key)) {
+            return redisTool.getList(APP_DROP_DOWN, BaseAppDropDown.class);
+        }
+        synchronized (this) {
+            if (redisTool.hasKey(key)) {
+                return redisTool.getList(APP_DROP_DOWN, BaseAppDropDown.class);
+            }
 
+            List<BaseAppDropDown> list = beanSearcher.searchAll(BaseAppDropDown.class);
+
+            redisTool.set(APP_DROP_DOWN, list);
+
+            return list;
+        }
     }
 
     /**
-     * 下拉分页
-     *
-     * @param req
-     * @return
+     * 删除缓存
+     * @param id
      */
-
-    public PageResult pageDropDown(BaseRoleDropDownPage req) {
-
-
-
-        Map<String, Object> build = MapUtils.builder()
-                .page(req.getPage(), req.getSize())
-                .field(BaseRoleDropDownPage::getName, req.getName())
-                .build();
-        SearchResult<BaseAppPage> search = beanSearcher.search(BaseAppPage.class,  build);
-        return PageResultUtil.convert(search, req);
-        return null;
+    private void cleanCache(Long id) {
+        redisTool.execute(new SessionCallback() {
+            @Override
+            public Object execute(RedisOperations operations) throws DataAccessException {
+                operations.multi();
+                redisTool.deleteKey(APP_ID, id);
+                redisTool.deleteKey(APP_DROP_DOWN);
+                operations.exec();
+                return null;
+            }
+        });
     }
 }

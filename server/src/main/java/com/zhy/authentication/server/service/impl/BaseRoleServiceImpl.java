@@ -1,14 +1,19 @@
 package com.zhy.authentication.server.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.zhxu.bs.BeanSearcher;
+import cn.zhxu.bs.util.MapUtils;
+import com.goudong.boot.redis.core.RedisTool;
 import com.goudong.boot.web.core.ClientException;
+import com.goudong.core.lang.PageResult;
 import com.goudong.core.util.AssertUtil;
-import com.mysql.cj.xdevapi.Client;
 import com.zhy.authentication.server.domain.BaseRole;
 import com.zhy.authentication.server.repository.BaseRoleRepository;
 import com.zhy.authentication.server.repository.BaseUserRoleRepository;
 import com.zhy.authentication.server.rest.req.BaseRoleCreate;
 import com.zhy.authentication.server.rest.req.BaseRoleUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
+import com.zhy.authentication.server.rest.req.search.BaseRolePage;
 import com.zhy.authentication.server.service.BaseRoleService;
 import com.zhy.authentication.server.service.dto.BaseRoleDTO;
 import com.zhy.authentication.server.service.dto.MyAuthentication;
@@ -22,7 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import static com.zhy.authentication.server.enums.RedisKeyTemplateProviderEnum.ROLE_DROP_DOWN;
 
 /**
  * Service Implementation for managing {@link BaseRole}.
@@ -41,6 +50,12 @@ public class BaseRoleServiceImpl implements BaseRoleService {
 
     @Resource
     private BaseUserRoleRepository baseUserRoleRepository;
+
+    @Resource
+    private RedisTool redisTool;
+
+    @Resource
+    private BeanSearcher beanSearcher;
 
     // /**
     //  * Save a baseRole.
@@ -149,5 +164,41 @@ public class BaseRoleServiceImpl implements BaseRoleService {
         baseRoleRepository.deleteById(id);
 
         return true;
+    }
+
+    @Override
+    public PageResult page(BaseRolePage req) {
+        return null;
+    }
+
+    /**
+     * 角色下拉
+     * @param req
+     * @return
+     */
+    @Override
+    public List<BaseRoleDropDown> dropDown(BaseRoleDropDown req) {
+        MyAuthentication authentication = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+        Long appId = Optional.ofNullable(req.getAppId()).orElseGet(() -> authentication.getAppId());
+
+        // redis key
+        String key = ROLE_DROP_DOWN.getFullKey(appId);
+        if (redisTool.hasKey(key)) {
+            return redisTool.getList(ROLE_DROP_DOWN, BaseRoleDropDown.class, appId);
+        }
+        synchronized (this) {
+            if (redisTool.hasKey(key)) {
+                return redisTool.getList(ROLE_DROP_DOWN, BaseRoleDropDown.class, appId);
+            }
+
+            Map<String, Object> build = MapUtils.builder()
+                    .field(BaseRoleDropDown::getAppId, appId)
+                    .build();
+            List<BaseRoleDropDown> list = beanSearcher.searchAll(BaseRoleDropDown.class, build);
+
+            redisTool.set(ROLE_DROP_DOWN, list);
+
+            return list;
+        }
     }
 }

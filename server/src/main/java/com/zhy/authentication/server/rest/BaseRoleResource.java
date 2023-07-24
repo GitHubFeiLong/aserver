@@ -4,14 +4,10 @@ import com.goudong.core.lang.PageResult;
 import com.goudong.core.lang.Result;
 import com.zhy.authentication.server.rest.req.BaseRoleCreate;
 import com.zhy.authentication.server.rest.req.BaseRoleUpdate;
-import com.zhy.authentication.server.rest.req.BaseUserCreate;
-import com.zhy.authentication.server.rest.req.BaseUserUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseRolePage;
-import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.service.BaseRoleService;
 import com.zhy.authentication.server.service.dto.BaseRoleDTO;
-import com.zhy.authentication.server.service.dto.BaseRoleMenuDTO;
-import com.zhy.authentication.server.service.dto.BaseUserDTO;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * REST controller for managing {@link com.zhy.authentication.server.domain.BaseRole}.
@@ -39,7 +36,6 @@ public class BaseRoleResource {
         return Result.ofSuccess(baseRoleService.save(req));
     }
 
-
     @PutMapping("/base-role")
     @ApiOperation(value = "修改角色")
     public Result<BaseRoleDTO> update(@RequestBody @Validated BaseRoleUpdate req) {
@@ -54,7 +50,13 @@ public class BaseRoleResource {
 
     @GetMapping("/base-roles")
     @ApiOperation(value = "分页角色")
-    public Result<PageResult<BaseRolePage>> page(@Validated BaseUserPage req) {
+    public Result<PageResult<BaseRolePage>> page(@Validated BaseRolePage req) {
         return Result.ofSuccess(baseRoleService.page(req));
+    }
+
+    @GetMapping("/base-role/drop-down")
+    @ApiOperation(value = "角色下拉")
+    public Result<List<BaseRoleDropDown>> dropDown(BaseRoleDropDown req) {
+        return Result.ofSuccess(baseRoleService.dropDown(req));
     }
 }

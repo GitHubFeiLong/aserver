@@ -1,19 +1,14 @@
 package com.zhy.authentication.server.rest;
 
-import cn.zhxu.bs.BeanSearcher;
-import cn.zhxu.bs.SearchResult;
-import cn.zhxu.bs.util.MapUtils;
 import com.goudong.core.lang.PageResult;
 import com.goudong.core.lang.Result;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseAppDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseAppPage;
 import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
-import com.zhy.authentication.server.rest.req.search.BaseRoleDropDownPage;
 import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.dto.BaseAppDTO;
-import com.zhy.authentication.server.util.PageResultUtil;
-import io.jsonwebtoken.SignatureException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -24,10 +19,15 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 /**
- * REST controller for managing {@link com.zhy.authentication.server.domain.BaseApp}.
+ * <pre>
+ * 新增
+ * 编辑
+ * 删除
+ * 分页
+ * 下拉
+ * </pre>
  */
 @RestController
 @RequestMapping("/app")
@@ -39,6 +39,11 @@ public class BaseAppResource {
     @Resource
     private BaseAppService baseAppService;
 
+    /**
+     * 新增应用
+     * @param req
+     * @return
+     */
     @PostMapping("/base-app")
     @ApiOperation("新增")
     public Result<BaseAppDTO> create(@Valid @RequestBody BaseAppCreate req) {
@@ -46,6 +51,11 @@ public class BaseAppResource {
         return Result.ofSuccess(result);
     }
 
+    /**
+     * 修改应用
+     * @param req
+     * @return
+     */
     @PutMapping("/base-app")
     @ApiOperation("修改")
     public Result<BaseAppDTO> update(@Valid @RequestBody BaseAppUpdate req) {
@@ -53,6 +63,11 @@ public class BaseAppResource {
         return Result.ofSuccess(result);
     }
 
+    /**
+     * 删除应用
+     * @param id
+     * @return
+     */
     @DeleteMapping("/base-app/{id}")
     @ApiOperation("删除")
     public Result<Boolean> delete(@PathVariable Long id) {
@@ -60,15 +75,25 @@ public class BaseAppResource {
         return Result.ofSuccess(true);
     }
 
+    /**
+     * 应用分页
+     * @param req
+     * @return
+     */
     @GetMapping("/base-apps")
     @ApiOperation("分页")
     public Result<PageResult<BaseAppPage>> page(@Validated BaseAppPage req) {
         return Result.ofSuccess(baseAppService.page(req));
     }
 
-    @GetMapping("/drop-down")
-    @ApiOperation("下拉分页")
-    public Result<List<BaseRoleDropDown>> pageDropDown(@Validated BaseRoleDropDown req) {
+    /**
+     * 应用下拉
+     * @param req
+     * @return
+     */
+    @GetMapping("/base-app/drop-down")
+    @ApiOperation("下拉")
+    public Result<List<BaseAppDropDown>> pageDropDown(@Validated BaseAppDropDown req) {
         return Result.ofSuccess(baseAppService.pageDropDown(req));
     }
 }

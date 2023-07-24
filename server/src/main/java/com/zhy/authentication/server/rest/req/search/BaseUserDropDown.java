@@ -11,13 +11,12 @@ import lombok.Data;
  * @date 2023/7/22 19:59
  */
 @SearchBean(
-        tables="base_role"
+        tables="base_user"
 )
 @Data
-public class BaseRoleDropDown {
+public class BaseUserDropDown {
     //~fields
     //==================================================================================================================
-
     private Long id;
 
     private String name;

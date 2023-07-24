@@ -16,7 +16,7 @@ import lombok.Data;
  * @version 1.0
  * @date 2023/7/22 19:59
  */
-@SearchBean(tables="base_app ba")
+@SearchBean(tables="base_app", orderBy = "id asc")
 @Data
 public class BaseAppPage extends BasePage {
     //~fields

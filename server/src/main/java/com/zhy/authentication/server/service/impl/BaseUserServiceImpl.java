@@ -5,6 +5,7 @@ import cn.zhxu.bs.BeanSearcher;
 import cn.zhxu.bs.SearchResult;
 import cn.zhxu.bs.operator.InList;
 import cn.zhxu.bs.util.MapUtils;
+import com.goudong.boot.redis.core.RedisTool;
 import com.goudong.boot.web.core.ClientException;
 import com.goudong.core.lang.PageResult;
 import com.goudong.core.util.AssertUtil;
@@ -18,6 +19,7 @@ import com.zhy.authentication.server.domain.BaseUserRole;
 import com.zhy.authentication.server.repository.*;
 import com.zhy.authentication.server.rest.req.BaseUserCreate;
 import com.zhy.authentication.server.rest.req.BaseUserUpdate;
+import com.zhy.authentication.server.rest.req.search.BaseUserDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.rest.req.search.SelectUsersRoleNames;
 import com.zhy.authentication.server.service.BaseUserService;
@@ -28,7 +30,6 @@ import com.zhy.authentication.server.service.dto.MyAuthentication;
 import com.zhy.authentication.server.service.mapper.BaseMenuMapper;
 import com.zhy.authentication.server.service.mapper.BaseUserMapper;
 import com.zhy.authentication.server.util.PageResultUtil;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.zhy.authentication.server.enums.RedisKeyTemplateProviderEnum.APP_DROP_DOWN;
+import static com.zhy.authentication.server.enums.RedisKeyTemplateProviderEnum.USER_DROP_DOWN;
 
 /**
  * Service Implementation for managing {@link BaseUser}.
@@ -85,6 +89,9 @@ public class BaseUserServiceImpl implements BaseUserService {
     @Resource
     private BeanSearcher beanSearcher;
 
+    @Resource
+    private RedisTool redisTool;
+
     /**
      * 新增用户
      * @param req
@@ -104,6 +111,8 @@ public class BaseUserServiceImpl implements BaseUserService {
         baseUser.setEnabled(true);
         baseUser.setLocked(false);
         baseUserRepository.save(baseUser);
+        redisTool.deleteKey(APP_DROP_DOWN, req.getAppId());
+
         return baseUserMapper.toDto(baseUser);
     }
 
@@ -183,7 +192,7 @@ public class BaseUserServiceImpl implements BaseUserService {
         }
 
         baseUserRepository.deleteById(id);
-
+        redisTool.deleteKey(APP_DROP_DOWN, baseUser.getAppId());
         return true;
     }
 
@@ -293,8 +302,35 @@ public class BaseUserServiceImpl implements BaseUserService {
 
         BaseUserDTO baseUserDTO = baseUserMapper.toDto(baseUser);
 
-        // 设置角色
-
         return baseUserDTO;
+    }
+
+    /**
+     * 用户下拉选
+     * @param req
+     * @return
+     */
+    @Override
+    public List<BaseUserDropDown> dropDown(BaseUserDropDown req) {
+        MyAuthentication authentication = (MyAuthentication)SecurityContextHolder.getContext().getAuthentication();
+        Long appId = Optional.ofNullable(req.getAppId()).orElseGet(() -> authentication.getAppId());
+        // redis key
+        String key = USER_DROP_DOWN.getFullKey(appId);
+        if (redisTool.hasKey(key)) {
+            return redisTool.getList(USER_DROP_DOWN, BaseUserDropDown.class, appId);
+        }
+        synchronized (this) {
+            if (redisTool.hasKey(key)) {
+                return redisTool.getList(USER_DROP_DOWN, BaseUserDropDown.class, appId);
+            }
+
+            Map<String, Object> build = MapUtils.builder()
+                    .field(BaseUserDropDown::getAppId, appId)
+                    .build();
+            List<BaseUserDropDown> list = beanSearcher.searchAll(BaseUserDropDown.class, build);
+
+            redisTool.set(APP_DROP_DOWN, list, appId);
+            return list;
+        }
     }
 }
