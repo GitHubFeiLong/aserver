@@ -7,6 +7,7 @@ import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import javax.validation.Payload;
 import java.lang.annotation.*;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,6 +19,11 @@ import java.util.Optional;
 )
 @Documented
 public @interface AppValidator {
+    String message() default "";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 
     class AppConstraintValidator implements ConstraintValidator<AppValidator, Long> {
 

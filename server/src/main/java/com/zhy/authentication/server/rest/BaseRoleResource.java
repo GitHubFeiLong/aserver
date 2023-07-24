@@ -8,6 +8,7 @@ import com.zhy.authentication.server.rest.req.search.BaseRoleDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseRolePage;
 import com.zhy.authentication.server.service.BaseRoleService;
 import com.zhy.authentication.server.service.dto.BaseRoleDTO;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,17 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
 
+
 /**
- * REST controller for managing {@link com.zhy.authentication.server.domain.BaseRole}.
- * TODO 创建，删除，修改，分页，
+ * <pre>
+ * 新增
+ * 编辑
+ * 删除
+ * 分页
+ * 下拉
+ * </pre>
  */
+@Api(tags = "角色")
 @RestController
 @RequestMapping("/role")
 public class BaseRoleResource {
