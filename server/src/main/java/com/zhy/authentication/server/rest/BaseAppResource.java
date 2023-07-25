@@ -93,7 +93,18 @@ public class BaseAppResource {
      */
     @GetMapping("/base-app/drop-down")
     @ApiOperation("下拉")
-    public Result<List<BaseAppDropDown>> pageDropDown(@Validated BaseAppDropDown req) {
-        return Result.ofSuccess(baseAppService.pageDropDown(req));
+    public Result<List<BaseAppDropDown>> dropDown(@Validated BaseAppDropDown req) {
+        return Result.ofSuccess(baseAppService.dropDown(req));
+    }
+
+    /**
+     * 应用下拉
+     * @param req
+     * @return
+     */
+    @GetMapping("/base-app/all-drop-down")
+    @ApiOperation("下拉")
+    public Result<List<BaseAppDropDown>> allDropDown(@Validated BaseAppDropDown req) {
+        return Result.ofSuccess(baseAppService.allDropDown(req));
     }
 }

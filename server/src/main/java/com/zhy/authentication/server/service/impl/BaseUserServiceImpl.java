@@ -202,7 +202,6 @@ public class BaseUserServiceImpl implements BaseUserService {
      * @param id
      * @return
      */
-    @Override
     @Transactional(readOnly = true)
     public LoginDTO login(Long id) {
         BaseUser baseUser = baseUserRepository.findById(id).get();
@@ -247,6 +246,18 @@ public class BaseUserServiceImpl implements BaseUserService {
         loginDTO.setMenus(menuDTOS);
 
         return loginDTO;
+    }
+
+    /**
+     * 登录信息
+     *
+     * @param myAuthentication
+     * @return
+     */
+    @Override
+    public LoginDTO login(MyAuthentication myAuthentication) {
+
+        return null;
     }
 
     /**

@@ -37,6 +37,14 @@ public class BaseAppDTO implements Serializable {
     private String name;
 
     /**
+     * 应用首页
+     */
+    @NotNull
+    @Size(max = 255)
+    @ApiModelProperty(value = "应用首页")
+    private String homePage;
+
+    /**
      * 是否激活
      */
     @NotNull

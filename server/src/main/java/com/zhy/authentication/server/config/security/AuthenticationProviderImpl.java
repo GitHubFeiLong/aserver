@@ -72,9 +72,6 @@ public class AuthenticationProviderImpl implements AuthenticationProvider {
         // 用户名/电话/邮箱不传时直接抛出异常
         AssertUtil.isFalse(StringUtils.isBlank(username) || StringUtils.isBlank(password), () -> ClientException.client(ClientExceptionEnum.BAD_REQUEST, "请输入正确的用户名和密码"));
 
-        // 将用户账号设置到request中，再登录成功和失败处理器中记录认证日志
-        // ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().setAttribute("principal", username);
-
         // 根据用户名查询用户是否存在
         MyUserDetails userInfo = (MyUserDetails) myUserDetailsService.loadUserByUsername(username);
 
@@ -94,6 +91,7 @@ public class AuthenticationProviderImpl implements AuthenticationProvider {
         MyAuthentication myAuthentication = new MyAuthentication();
         myAuthentication.setId(userInfo.getId());
         myAuthentication.setAppId(userInfo.getAppId());
+        myAuthentication.setSelectAppId(userInfo.getSelectAppId());
         myAuthentication.setUsername(userInfo.getUsername());
 
         return myAuthentication;

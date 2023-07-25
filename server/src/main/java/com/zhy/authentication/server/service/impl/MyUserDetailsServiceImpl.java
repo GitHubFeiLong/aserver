@@ -1,5 +1,6 @@
 package com.zhy.authentication.server.service.impl;
 
+import com.goudong.core.util.StringUtil;
 import com.zhy.authentication.server.constant.HttpHeaderConst;
 import com.zhy.authentication.server.domain.BaseUser;
 import com.zhy.authentication.server.repository.BaseAppRepository;
@@ -32,6 +33,7 @@ public class MyUserDetailsServiceImpl implements MyUserDetailsService {
     @Resource
     private BaseAppRepository baseAppRepository;
 
+
     /**
      * 加载根据用户名加载用户
      * 当认证失败
@@ -41,15 +43,26 @@ public class MyUserDetailsServiceImpl implements MyUserDetailsService {
      * @throws AuthenticationException
      */
     @Override
-    @Transactional(readOnly = true)
     public MyUserDetails loadUserByUsername(String username) throws AuthenticationException {
-        Long appId = (Long) httpServletRequest.getAttribute(HttpHeaderConst.X_APP_ID);
+        // 登录下拉选的appId
+        String selectAppIdStr = httpServletRequest.getParameter("appId");
+        Long selectAppId = StringUtil.isNotBlank(selectAppIdStr) ? Long.parseLong(selectAppIdStr) : null;
 
-        BaseUser user = baseUserRepository.findByLogin(appId, username);
-        // System.out.println("user = " + user);
+        BaseUser user = null;
+        if (selectAppId != null) {
+            // 根据选择的appId查询用户
+            user = baseUserRepository.findByLogin(selectAppId, username);
+        }
+
+        // 请求头上的appId
+        Long xAppId =  (Long)httpServletRequest.getAttribute(HttpHeaderConst.X_APP_ID);
+        // 选择查询的用户不存在
+        user = user != null ? user: baseUserRepository.findByLogin(xAppId, username);
+
         if (user != null) {
             MyUserDetails myUserDetails = new MyUserDetails();
             myUserDetails.setId(user.getId());
+            myUserDetails.setSelectAppId(selectAppId == null ? selectAppId : xAppId);
             myUserDetails.setAppId(user.getAppId());
             myUserDetails.setUsername(user.getUsername());
             myUserDetails.setPassword(user.getPassword());

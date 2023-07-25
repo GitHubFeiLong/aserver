@@ -25,6 +25,21 @@ public class BaseAppCreate {
     private String name;
 
     /**
+     * 应用首页
+     */
+    @Size(max = 255)
+    @ApiModelProperty(value = "应用首页")
+    private String homePage;
+
+
+    /**
+     * 是否激活应用
+     */
+    @NotNull
+    @ApiModelProperty(value = "是否激活应用", required = true)
+    private Boolean enabled;
+
+    /**
      * 备注
      */
     @ApiModelProperty(value = "备注")

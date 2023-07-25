@@ -22,9 +22,6 @@ import java.io.Serializable;
 public class BaseApp extends BasePO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     /**
      * 应用密钥
@@ -41,6 +38,14 @@ public class BaseApp extends BasePO implements Serializable {
     @Size(max = 16)
     @Column(name = "name", length = 16, nullable = false)
     private String name;
+
+    /**
+     * 应用首页
+     */
+    @NotNull
+    @Size(max = 255)
+    @Column(name = "home_page", length = 255, nullable = false)
+    private String homePage;
 
     /**
      * 是否激活

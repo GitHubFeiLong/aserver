@@ -19,7 +19,6 @@ public class AuthenticationDetailsSourceImpl implements AuthenticationDetailsSou
 
     @Override
     public WebAuthenticationDetails buildDetails(HttpServletRequest httpServletRequest) {
-
         return new WebAuthenticationDetailsImpl(httpServletRequest);
     }
 }

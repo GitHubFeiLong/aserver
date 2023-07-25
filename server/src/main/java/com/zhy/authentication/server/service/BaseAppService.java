@@ -55,5 +55,12 @@ public interface BaseAppService {
      * @param req
      * @return
      */
-    List<BaseAppDropDown> pageDropDown(BaseAppDropDown req);
+    List<BaseAppDropDown> dropDown(BaseAppDropDown req);
+
+    /**
+     * 下拉
+     * @param req
+     * @return
+     */
+    List<BaseAppDropDown> allDropDown(BaseAppDropDown req);
 }

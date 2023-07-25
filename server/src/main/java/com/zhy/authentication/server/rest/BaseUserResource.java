@@ -42,6 +42,7 @@ public class BaseUserResource {
     @PostMapping("/login")
     @ApiOperation(value = "登录(password)")
     @ApiImplicitParams({
+            @ApiImplicitParam(name = "appId", value = "应用id", required = false),
             @ApiImplicitParam(name = "username", value = "用户名", required = true),
             @ApiImplicitParam(name = "password", value = "密码", required = true),
     })

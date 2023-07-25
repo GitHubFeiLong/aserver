@@ -57,7 +57,8 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             "/actuator/**"
     );
     private static List<String> IGNORE_URIS = ListUtil.newArrayList(
-            "/**/user/login"
+            "/**/user/login",
+            "/**/app/base-app/all-drop-down" // 应用下拉
     );
 
     /**

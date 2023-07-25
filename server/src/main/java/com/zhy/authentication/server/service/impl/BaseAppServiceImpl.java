@@ -100,8 +100,9 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseApp.setId(IdUtil.getSnowflake().nextId());
         baseApp.setName(req.getName());
         baseApp.setRemark(req.getRemark());
+        baseApp.setHomePage(req.getHomePage());
         baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
-        baseApp.setEnabled(true);
+        baseApp.setEnabled(req.getEnabled());
 
         // 新增管理用户
         BaseUser baseUser = new BaseUser();
@@ -159,6 +160,7 @@ public class BaseAppServiceImpl implements BaseAppService {
 
         baseApp.setName(Optional.ofNullable(req.getName()).orElseGet(() -> baseApp.getName()));
         baseApp.setRemark(Optional.ofNullable(req.getRemark()).orElseGet(() -> baseApp.getRemark()));
+        baseApp.setHomePage(Optional.ofNullable(req.getHomePage()).orElseGet(() -> baseApp.getHomePage()));
         baseApp.setEnabled(Optional.ofNullable(req.getEnabled()).orElseGet(() -> baseApp.getEnabled()));
         baseAppRepository.save(baseApp);
 
@@ -228,11 +230,16 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public PageResult page(BaseAppPage req) {
+        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
         Map<String, Object> build = MapUtils.builder()
                 .page(req.getPage(), req.getSize())
                 .field(BaseAppPage::getName, req.getName())
                 .orderBy(BaseAppPage::getId).asc()
                 .build();
+        if (!authentication.superAdmin()) {
+            build.put("id", authentication.getAppId());
+        }
+
         SearchResult<BaseAppPage> search = beanSearcher.search(BaseAppPage.class,  build);
         return PageResultUtil.convert(search, req);
     }
@@ -243,7 +250,7 @@ public class BaseAppServiceImpl implements BaseAppService {
      * @return
      */
     @Override
-    public List<BaseAppDropDown> pageDropDown(BaseAppDropDown req) {
+    public List<BaseAppDropDown> dropDown(BaseAppDropDown req) {
         MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
         // 不是超级管理员只返回自身应用
         if (!authentication.superAdmin()) {
@@ -253,6 +260,18 @@ public class BaseAppServiceImpl implements BaseAppService {
             baseAppDropDown.setName(baseAppDTO.getName());
             return ListUtil.newArrayList(baseAppDropDown);
         }
+        // 超级管理员返回所有应用
+        return allDropDown(req);
+    }
+
+    /**
+     * 下拉
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public List<BaseAppDropDown> allDropDown(BaseAppDropDown req) {
         // 超级管理员返回所有应用
         String key = APP_DROP_DOWN.getFullKey();
         if (redisTool.hasKey(key)) {

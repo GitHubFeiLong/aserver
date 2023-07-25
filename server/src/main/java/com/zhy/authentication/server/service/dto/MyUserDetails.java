@@ -18,20 +18,49 @@ import java.util.List;
 @Data
 public class MyUserDetails implements UserDetails {
 
+    /**
+     * 用户id
+     */
     private Long id;
 
+    /**
+     * 用户所在appId
+     */
     private Long appId;
 
+    /**
+     * 登录所选appId,不选择，使用用户所在appId
+     */
+    private Long selectAppId;
+
+    /**
+     * 用户名
+     */
     private String username;
 
+    /**
+     * 是否激活
+     */
     private String password;
 
+    /**
+     * 用户id
+     */
     private Boolean enabled;
 
+    /**
+     * 是否锁定
+     */
     private Boolean locked;
 
+    /**
+     * 有效时长
+     */
     private Date validTime;
 
+    /**
+     * 角色
+     */
     private List<GrantedAuthority> roles;
 
     @Override

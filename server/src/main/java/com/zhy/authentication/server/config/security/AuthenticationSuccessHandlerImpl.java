@@ -75,7 +75,7 @@ public class AuthenticationSuccessHandlerImpl implements AuthenticationSuccessHa
         MyAuthentication myAuthentication = (MyAuthentication) authentication;
 
         // 查询用户，角色，菜单
-        LoginDTO login = baseUserService.login(myAuthentication.getId());
+        LoginDTO login = baseUserService.login(myAuthentication);
 
         String json = objectMapper.writeValueAsString(Result.ofSuccess(login));
 

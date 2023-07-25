@@ -7,6 +7,7 @@ import com.zhy.authentication.server.rest.req.search.BaseUserDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.service.dto.BaseUserDTO;
 import com.zhy.authentication.server.service.dto.LoginDTO;
+import com.zhy.authentication.server.service.dto.MyAuthentication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -58,10 +59,10 @@ public interface BaseUserService {
 
     /**
      * 登录信息
-     * @param id
+     * @param myAuthentication
      * @return
      */
-    LoginDTO login(Long id);
+    LoginDTO login(MyAuthentication myAuthentication);
 
     /**
      * 分页查询

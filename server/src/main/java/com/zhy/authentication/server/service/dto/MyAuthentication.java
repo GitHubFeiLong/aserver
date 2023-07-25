@@ -33,6 +33,11 @@ public class MyAuthentication implements Authentication {
     private Long appId;
 
     /**
+     * 登录所选appId,不选择，使用用户所在appId
+     */
+    private Long selectAppId;
+
+    /**
      * 用户名
      */
     private String username;
