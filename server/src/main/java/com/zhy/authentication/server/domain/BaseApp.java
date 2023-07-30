@@ -42,9 +42,8 @@ public class BaseApp extends BasePO implements Serializable {
     /**
      * 应用首页
      */
-    @NotNull
     @Size(max = 255)
-    @Column(name = "home_page", length = 255, nullable = false)
+    @Column(name = "home_page", length = 255, nullable = true)
     private String homePage;
 
     /**

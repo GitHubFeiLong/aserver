@@ -1,13 +1,15 @@
 package com.zhy.authentication.server.config.security;
 
+import com.goudong.boot.web.core.BasicException;
+import com.goudong.core.util.AssertUtil;
 import com.goudong.core.util.StringUtil;
+import com.zhy.authentication.server.constant.HttpHeaderConst;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.util.Enumeration;
 
 /**
  * 类描述：
@@ -24,10 +26,18 @@ public class WebAuthenticationDetailsImpl extends WebAuthenticationDetails imple
 
     Long selectAppId;
 
+    Long xAppId;
+
     WebAuthenticationDetailsImpl(HttpServletRequest httpServletRequest) {
         super(httpServletRequest);
-        String appIdStr = httpServletRequest.getParameter("appId");
-        selectAppId = StringUtil.isNotBlank(appIdStr) ? Long.parseLong(appIdStr) : null;
+        // 下拉选应用
+        String selectAppIdStr = httpServletRequest.getParameter("appId");
+        selectAppId = StringUtil.isNotBlank(selectAppIdStr) ? Long.parseLong(selectAppIdStr) : null;
+
+        // 请求头应用Id
+        String xAppIdStr = httpServletRequest.getHeader(HttpHeaderConst.X_APP_ID);
+        AssertUtil.isNotBlank(xAppIdStr, () -> BasicException.client(String.format("请求头%s丢失", HttpHeaderConst.X_APP_ID)));
+        xAppId = Long.parseLong(xAppIdStr);
     }
 
 }

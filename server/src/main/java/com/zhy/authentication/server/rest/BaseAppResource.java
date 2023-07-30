@@ -20,18 +20,20 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 
+import static com.zhy.authentication.server.constant.SwaggerConst.DROP_DOWN_GROUP_NAME;
+
 /**
- * <pre>
- * 新增
- * 编辑
- * 删除
- * 分页
- * 下拉
- * </pre>
+ * 类描述：
+ * 应用管理
+ * @ClassName BaseAppResource
+ * @Description 新增、删除、修改、分页、下拉
+ * @Author Administrator
+ * @Date 2023/7/29 11:33
+ * @Version 1.0
  */
 @RestController
 @RequestMapping("/app")
-@Api(tags = "应用")
+@Api(tags = "应用管理")
 public class BaseAppResource {
 
     private final Logger log = LoggerFactory.getLogger(BaseAppResource.class);
@@ -45,7 +47,7 @@ public class BaseAppResource {
      * @return
      */
     @PostMapping("/base-app")
-    @ApiOperation("新增")
+    @ApiOperation("新增应用")
     public Result<BaseAppDTO> create(@Valid @RequestBody BaseAppCreate req) {
         BaseAppDTO result = baseAppService.save(req);
         return Result.ofSuccess(result);
@@ -57,7 +59,7 @@ public class BaseAppResource {
      * @return
      */
     @PutMapping("/base-app")
-    @ApiOperation("修改")
+    @ApiOperation("修改应用")
     public Result<BaseAppDTO> update(@Valid @RequestBody BaseAppUpdate req) {
         BaseAppDTO result = baseAppService.update(req);
         return Result.ofSuccess(result);
@@ -69,7 +71,7 @@ public class BaseAppResource {
      * @return
      */
     @DeleteMapping("/base-app/{id}")
-    @ApiOperation("删除")
+    @ApiOperation("删除应用")
     public Result<Boolean> delete(@PathVariable Long id) {
         baseAppService.delete(id);
         return Result.ofSuccess(true);
@@ -81,7 +83,7 @@ public class BaseAppResource {
      * @return
      */
     @GetMapping("/base-apps")
-    @ApiOperation("分页")
+    @ApiOperation("分页查询应用")
     public Result<PageResult<BaseAppPage>> page(@Validated BaseAppPage req) {
         return Result.ofSuccess(baseAppService.page(req));
     }
@@ -92,7 +94,7 @@ public class BaseAppResource {
      * @return
      */
     @GetMapping("/base-app/drop-down")
-    @ApiOperation("下拉")
+    @ApiOperation(value = "应用下拉(条件限制)", notes = "需要登录，显示当前用户能查询到的应用，超级管理员查询所有，管理员只能查询本应用", tags = DROP_DOWN_GROUP_NAME)
     public Result<List<BaseAppDropDown>> dropDown(@Validated BaseAppDropDown req) {
         return Result.ofSuccess(baseAppService.dropDown(req));
     }
@@ -103,7 +105,7 @@ public class BaseAppResource {
      * @return
      */
     @GetMapping("/base-app/all-drop-down")
-    @ApiOperation("下拉")
+    @ApiOperation(value = "应用下拉(无条件限制)", notes = "不需要登录，显示所有应用，根据创建时间排序", tags = DROP_DOWN_GROUP_NAME)
     public Result<List<BaseAppDropDown>> allDropDown(@Validated BaseAppDropDown req) {
         return Result.ofSuccess(baseAppService.allDropDown(req));
     }

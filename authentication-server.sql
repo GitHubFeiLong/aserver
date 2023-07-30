@@ -27,15 +27,16 @@ CREATE TABLE `base_app`
     `id`                 bigint(20) NOT NULL AUTO_INCREMENT,
     `secret`             varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '应用密钥',
     `name`               varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '应用名称',
+    `home_page`          varchar(255)                                                    DEFAULT NULL COMMENT '首页',
     `enabled`            bit(1)                                                 NOT NULL DEFAULT b'0' COMMENT '是否激活',
-    `remark`             varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
-    `created_date`       datetime(0) NULL DEFAULT NULL COMMENT '创建时间',
-    `last_modified_date` datetime(0) NULL DEFAULT NULL COMMENT '最后修改时间',
-    `created_by`         varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '创建人',
-    `last_modified_by`   varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '最后修改人',
+    `remark`             varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci         DEFAULT NULL COMMENT '备注',
+    `created_date`       datetime                                                        DEFAULT NULL COMMENT '创建时间',
+    `last_modified_date` datetime                                                        DEFAULT NULL COMMENT '最后修改时间',
+    `created_by`         varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci         DEFAULT NULL COMMENT '创建人',
+    `last_modified_by`   varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci         DEFAULT NULL COMMENT '最后修改人',
     PRIMARY KEY (`id`) USING BTREE,
-    UNIQUE INDEX `uk_app_name`(`name`) USING BTREE COMMENT '应用名称唯一'
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '应用表' ROW_FORMAT = Dynamic;
+    UNIQUE KEY `uk_app_name` (`name`) USING BTREE COMMENT '应用名称唯一'
+) ENGINE=InnoDB AUTO_INCREMENT=1683401957776920577 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='应用表';
 
 -- ----------------------------
 -- Table structure for base_menu

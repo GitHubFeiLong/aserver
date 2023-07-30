@@ -35,6 +35,7 @@ public class MyAuthentication implements Authentication {
     /**
      * 登录所选appId,不选择，使用用户所在appId
      */
+    @Deprecated
     private Long selectAppId;
 
     /**

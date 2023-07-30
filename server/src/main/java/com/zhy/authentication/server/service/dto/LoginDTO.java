@@ -26,4 +26,14 @@ public class LoginDTO {
     private Set<String> roles;
 
     private List<BaseMenuDTO> menus;
+
+    /**
+     * 选择应用的首页
+     */
+    private String selectAppIdHomePage;
+
+    /**
+     * 请求头应用的首页
+     */
+    private String xAppIdHomePage;
 }

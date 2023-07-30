@@ -10,8 +10,10 @@ import com.goudong.boot.redis.core.RedisTool;
 import com.goudong.boot.web.core.ClientException;
 import com.goudong.boot.web.core.ServerException;
 import com.goudong.core.lang.PageResult;
+import com.goudong.core.util.AssertUtil;
 import com.goudong.core.util.ListUtil;
 import com.zhy.authentication.server.constant.RoleConst;
+import com.zhy.authentication.server.constant.UserConst;
 import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.domain.BaseRole;
 import com.zhy.authentication.server.domain.BaseUser;
@@ -96,6 +98,9 @@ public class BaseAppServiceImpl implements BaseAppService {
     @Override
     public BaseAppDTO save(BaseAppCreate req) {
         log.debug("Request to save BaseApp : {}", req);
+        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        AssertUtil.isTrue(authentication.superAdmin(), () -> ClientException.clientByForbidden());
+
         BaseApp baseApp = new BaseApp();
         baseApp.setId(IdUtil.getSnowflake().nextId());
         baseApp.setName(req.getName());
@@ -107,7 +112,7 @@ public class BaseAppServiceImpl implements BaseAppService {
         // 新增管理用户
         BaseUser baseUser = new BaseUser();
         baseUser.setAppId(baseApp.getId());
-        baseUser.setUsername("admin");
+        baseUser.setUsername(UserConst.ADMIN);
         baseUser.setPassword(passwordEncoder.encode("123456"));
         baseUser.setEnabled(true);
         baseUser.setLocked(false);
@@ -151,6 +156,9 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public BaseAppDTO update(BaseAppUpdate req) {
+        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        AssertUtil.isTrue(authentication.superAdmin(), () -> ClientException.clientByForbidden());
+
         BaseApp baseApp = baseAppRepository.findById(req.getId()).orElseThrow(() -> ClientException
                 .builder()
                 .clientMessageTemplate("应用id:{}不存在")
@@ -218,6 +226,8 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public void delete(Long id) {
+        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        AssertUtil.isTrue(authentication.superAdmin(), () -> ClientException.clientByForbidden());
         log.debug("Request to delete BaseApp : {}", id);
         baseAppRepository.deleteById(id);
         cleanCache(id);
@@ -231,14 +241,13 @@ public class BaseAppServiceImpl implements BaseAppService {
     @Override
     public PageResult page(BaseAppPage req) {
         MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        AssertUtil.isTrue(authentication.superAdmin(), () -> ClientException.clientByForbidden());
+
         Map<String, Object> build = MapUtils.builder()
                 .page(req.getPage(), req.getSize())
                 .field(BaseAppPage::getName, req.getName())
                 .orderBy(BaseAppPage::getId).asc()
                 .build();
-        if (!authentication.superAdmin()) {
-            build.put("id", authentication.getAppId());
-        }
 
         SearchResult<BaseAppPage> search = beanSearcher.search(BaseAppPage.class,  build);
         return PageResultUtil.convert(search, req);

@@ -16,4 +16,5 @@ public interface BaseUserRepository extends JpaRepository<BaseUser, Long>, JpaSp
 
     @Query(value = "from BaseUser where appId=?1 and username=?2")
     BaseUser findByLogin(Long appId, String login);
+
 }

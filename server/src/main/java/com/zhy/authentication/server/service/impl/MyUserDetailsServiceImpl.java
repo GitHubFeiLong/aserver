@@ -9,7 +9,6 @@ import com.zhy.authentication.server.service.MyUserDetailsService;
 import com.zhy.authentication.server.service.dto.MyUserDetails;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +42,7 @@ public class MyUserDetailsServiceImpl implements MyUserDetailsService {
      * @throws AuthenticationException
      */
     @Override
+    @Deprecated
     public MyUserDetails loadUserByUsername(String username) throws AuthenticationException {
         // 登录下拉选的appId
         String selectAppIdStr = httpServletRequest.getParameter("appId");

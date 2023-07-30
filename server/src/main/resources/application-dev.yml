@@ -58,7 +58,12 @@ bean-searcher:
     default-mapping:
       ignore-fields: org_grails_datastore_gorm_GormValidateable__errors
 
-goudong:
-  web:
-    api-log:
-      enabled: true
+#goudong:
+#  web:
+#    api-log:
+#      enabled: true
+
+authentication:
+  server:
+    app:
+      adminDefaultPassword: 123456

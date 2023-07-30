@@ -6,11 +6,12 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 基础用户
@@ -103,4 +104,31 @@ public class BaseUser extends BasePO implements Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     private List<BaseUserRole> roles = new ArrayList<>();
+
+
+    @Transient
+    private String roleName;
+
+    @Transient
+    private List<String> roleNames;
+
+    @Override
+    public String toString() {
+        return "BaseUser{" +
+                "id=" + id +
+                ", appId=" + appId +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", locked=" + locked +
+                ", validTime=" + validTime +
+                ", remark='" + remark + '\'' +
+                ", createdDate=" + createdDate +
+                ", lastModifiedDate=" + lastModifiedDate +
+                ", createdBy='" + createdBy + '\'' +
+                ", lastModifiedBy='" + lastModifiedBy + '\'' +
+                ", roleName='" + roleName + '\'' +
+                ", roleNames=" + roleNames +
+                '}';
+    }
 }

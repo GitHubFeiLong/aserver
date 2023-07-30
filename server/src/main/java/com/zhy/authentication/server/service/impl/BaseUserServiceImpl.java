@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -91,6 +92,10 @@ public class BaseUserServiceImpl implements BaseUserService {
 
     @Resource
     private RedisTool redisTool;
+
+
+    @Resource
+    private JdbcTemplate jdbcTemplate;
 
     /**
      * 新增用户
@@ -256,9 +261,28 @@ public class BaseUserServiceImpl implements BaseUserService {
      */
     @Override
     public LoginDTO login(MyAuthentication myAuthentication) {
-
+        LoginDTO loginDTO = new LoginDTO();
+        // 所选应用是自己所在应用
+        if(myAuthentication.getAppId().equals(myAuthentication.getSelectAppId())) {
+            log.info("所选应用和用户所在应用相同");
+            BaseApp baseApp = baseAppRepository.findById(myAuthentication.getAppId()).get();
+            loginDTO.setId(myAuthentication.getId());
+            loginDTO.setUsername(myAuthentication.getUsername());
+            loginDTO.setAppId(myAuthentication.getAppId());
+            // 创建token
+            Jwt jwt = new Jwt(1, TimeUnit.DAYS, baseApp.getSecret());
+            // String token = jwt.generateToken(new UserToken(myAuthentication.getId(), baseApp.getId(), myAuthentication.getUsername(), roles));
+            loginDTO.setToken(null);
+            // 设置应用首页地址
+            loginDTO.setSelectAppIdHomePage(baseApp.getHomePage());
+            loginDTO.setXAppIdHomePage(baseApp.getHomePage());
+            return null;
+        }
+        log.info("所选应用和用户所在应用不相同：超级管理员");
         return null;
     }
+
+
 
     /**
      * 分页查询
