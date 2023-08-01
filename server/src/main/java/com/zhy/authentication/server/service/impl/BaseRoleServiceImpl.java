@@ -70,7 +70,7 @@ public class BaseRoleServiceImpl implements BaseRoleService {
      */
     @Override
     public BaseRoleDTO save(BaseRoleCreate req) {
-        Assert.isFalse(Objects.equals(RoleConst.ROLE_SUPER_ADMIN, req.getName()), () -> ClientException.client("添加角色失败"));
+        Assert.isFalse(Objects.equals(RoleConst.ROLE_APP_SUPER_ADMIN, req.getName()), () -> ClientException.client("添加角色失败"));
         MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
         // 不是超级管理员
         if (!authentication.superAdmin()) {

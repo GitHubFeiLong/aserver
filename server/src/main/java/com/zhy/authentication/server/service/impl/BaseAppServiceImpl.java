@@ -109,6 +109,14 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
         baseApp.setEnabled(req.getEnabled());
 
+        /*
+            新增服务端管理员
+         */
+        
+
+        /*
+            新增客户端管理员
+         */
         // 新增管理用户
         BaseUser baseUser = new BaseUser();
         baseUser.setAppId(baseApp.getId());
@@ -124,10 +132,11 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseRole.setName(RoleConst.ROLE_ADMIN);
         baseRole.setRemark("创建应用时，初始管理员角色");
 
-
         BaseUserRole baseUserRole = new BaseUserRole();
         baseUserRole.setUser(baseUser);
         baseUserRole.setRole(baseRole);
+
+
 
         transactionTemplate.execute(status -> {
             try {

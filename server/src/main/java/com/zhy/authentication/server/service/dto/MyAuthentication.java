@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static com.zhy.authentication.server.constant.RoleConst.ROLE_SUPER_ADMIN;
+import static com.zhy.authentication.server.constant.RoleConst.ROLE_APP_SUPER_ADMIN;
 
 /**
  * 类描述：
@@ -33,10 +33,9 @@ public class MyAuthentication implements Authentication {
     private Long appId;
 
     /**
-     * 登录所选appId,不选择，使用用户所在appId
+     * 登录的appId
      */
-    @Deprecated
-    private Long selectAppId;
+    private Long loginAppId;
 
     /**
      * 用户名
@@ -102,7 +101,7 @@ public class MyAuthentication implements Authentication {
      * @return true 超级管理员，false 不是超级管理员
      */
     public boolean superAdmin() {
-        return this.roles.stream().filter(f -> Objects.equals(f.getAuthority(), ROLE_SUPER_ADMIN)).findFirst().isPresent();
+        return this.roles.stream().filter(f -> Objects.equals(f.getAuthority(), ROLE_APP_SUPER_ADMIN)).findFirst().isPresent();
     }
     /**
      * 断言

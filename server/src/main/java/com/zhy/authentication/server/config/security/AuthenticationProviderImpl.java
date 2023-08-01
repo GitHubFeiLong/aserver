@@ -4,8 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import com.goudong.boot.web.core.ClientException;
 import com.goudong.boot.web.enumerate.ClientExceptionEnum;
 import com.goudong.core.util.AssertUtil;
-import com.zhy.authentication.server.constant.RoleConst;
-import com.zhy.authentication.server.constant.UserConst;
 import com.zhy.authentication.server.domain.BaseUser;
 import com.zhy.authentication.server.repository.BaseUserRepository;
 import com.zhy.authentication.server.service.MyUserDetailsService;
@@ -26,8 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -94,22 +90,14 @@ public class AuthenticationProviderImpl implements AuthenticationProvider {
         Long xAppId = webAuthenticationDetails.getXAppId();
         AssertUtil.isNotNull(xAppId, () -> ClientException.client(ClientExceptionEnum.BAD_REQUEST, "请求头X-App-Id丢失"));
         log.debug("登录参数如下，username={},password={},selectAppId={},xAppId={}", username, password, selectAppId, xAppId);
-
-        RuntimeException selectAppIdException = null;
-        RuntimeException xAppIdException = null;
         //======== 登录逻辑
         // 选择应用id登录逻辑
-        MyAuthentication myAuthentication = selectAppIdAuthentication(selectAppId, username, password, selectAppIdException);
-        if (myAuthentication != null) {
-            return myAuthentication;
-        }
-        // 请求头应用id登录逻辑
-        myAuthentication = xAppIdAuthentication(selectAppId, xAppId, username, password, selectAppIdException, xAppIdException);
-        if (myAuthentication != null) {
-            return myAuthentication;
+        if (selectAppId != null) {
+            return selectAppIdAuthentication(selectAppId, username, password);
         }
 
-        throw throwException(selectAppIdException, xAppIdException);
+        // 请求头应用id登录逻辑
+        return xAppIdAuthentication(xAppId, username, password);
     }
 
     @Override
@@ -118,137 +106,103 @@ public class AuthenticationProviderImpl implements AuthenticationProvider {
     }
 
     /**
-     * 选择应用id进行认证，
-     * @param selectAppId           所选应用id
-     * @param username              用户名
-     * @param password              密码
-     * @param selectAppIdException  记录认证失败的异常
-     * @return 认证成功时，返回认证成功对象，认证失败返回null，并给{@code selectAppIdException}赋值
+     * 选择应用id进行认证
+     * @param selectAppId   所选应用id
+     * @param username      用户名
+     * @param password      密码
+     * @return 认证成功时，返回认证成功对象
      */
-    public MyAuthentication selectAppIdAuthentication(Long selectAppId, String username, String password, RuntimeException selectAppIdException) {
-        // 选择了应用
-        if (selectAppId != null) {
-            log.info("选择了应用：{}", selectAppId);
-            BaseUser user = findByUsernameAndAppId(selectAppId, username);
-            // 所选用户存在
-            if (user != null) {
-                log.info("选择了应用,并且用户存在");
-                boolean passwordMatches = BCRYPT_PATTERN.matcher(password).matches()
-                        // 是密码格式，直接比较值
-                        ? Objects.equals(password, user.getPassword())
-                        // 使用 BCrypt 加密的方式进行匹配
-                        : passwordEncoder.matches(password, user.getPassword());
-                // 用户身份信息校验
-                if (!passwordMatches) {
-                    log.warn("选择了应用,用户密码错误");
-                    selectAppIdException = new BadCredentialsException("用户密码错误");
-                } else if (!user.getEnabled()) {
-                    log.warn("选择了应用,用户未激活");
-                    selectAppIdException = new DisabledException("用户未激活");
-                } else if (user.getValidTime().before(new Date())) {
-                    log.warn("选择了应用,账户已过期");
-                    selectAppIdException = new AccountExpiredException("账户已过期");
-                } else {
-                    // 用户校验通过，选择应用（管理员和应用下普通用户）
-                    log.info("选择了应用,用户校验成功");
-                    MyAuthentication myAuthentication = new MyAuthentication();
-                    myAuthentication.setId(user.getId());
-                    myAuthentication.setAppId(user.getAppId());
-                    myAuthentication.setUsername(user.getUsername());
-                    myAuthentication.setRoles(listRoleNameByUserId(user.getId()));
-                    return myAuthentication;
-                }
-            }
-        }
-        return null;
-    }
+    public MyAuthentication selectAppIdAuthentication(Long selectAppId, String username, String password) {
+        log.info("选择了应用：{}", selectAppId);
+        BaseUser user = findByUsernameAndAppId(selectAppId, username);
+        AssertUtil.isNotNull(user, () -> {
+            log.warn("选择了应用,用户名不存在");
+            return new UsernameNotFoundException("用户不存在");
+        });
+        // 所选用户存在
+        log.info("选择了应用,并且用户存在");
+        boolean passwordMatches = BCRYPT_PATTERN.matcher(password).matches()
+                // 是密码格式，直接比较值
+                ? Objects.equals(password, user.getPassword())
+                // 使用 BCrypt 加密的方式进行匹配
+                : passwordEncoder.matches(password, user.getPassword());
+        // 用户身份信息校验
+        // 密码校验
+        AssertUtil.isTrue(passwordMatches, () -> {
+            log.warn("选择了应用,用户密码错误");
+            return new BadCredentialsException("用户密码错误");
+        });
 
+        AssertUtil.isTrue(user.getEnabled(), () -> {
+            log.warn("选择了应用,用户未激活");
+            return new DisabledException("用户未激活");
+        });
+
+        AssertUtil.isTrue(user.getValidTime().after(new Date()), () -> {
+            log.warn("选择了应用,账户已过期");
+            return new AccountExpiredException("账户已过期");
+        });
+
+        // 用户校验通过，选择应用（管理员和应用下普通用户）
+        log.info("选择了应用,用户校验成功");
+        MyAuthentication myAuthentication = new MyAuthentication();
+        myAuthentication.setId(user.getId());
+        myAuthentication.setAppId(user.getAppId());
+        myAuthentication.setLoginAppId(selectAppId);
+        myAuthentication.setUsername(user.getUsername());
+        myAuthentication.setRoles(listRoleNameByUserId(user.getId()));
+        return myAuthentication;
+    }
 
     /**
      * 选择应用id进行认证，
-     * @param selectAppId           所选应用id
-     * @param username              用户名
-     * @param password              密码
-     * @param selectAppIdException  记录认证失败的异常
-     * @return 认证成功时，返回认证成功对象，认证失败返回null，并给{@code selectAppIdException}赋值
+     * @param xAppId    应用id
+     * @param username  用户名
+     * @param password  密码
+     * @return 认证成功时，返回认证成功对象
      */
-    @Transactional
-    public MyAuthentication xAppIdAuthentication(Long selectAppId, Long xAppId, String username, String password, RuntimeException selectAppIdException, RuntimeException xAppIdException) {
+    public MyAuthentication xAppIdAuthentication(Long xAppId, String username, String password) {
         log.info("开始根据X-App-Id校验用户");
         // 未选择应用,或者选择的应用校验用户失败
         BaseUser user = findByUsernameAndAppId(xAppId, username);
-        log.info("根据X-App-Id查询用户：{}", user);
+        AssertUtil.isNotNull(user, () -> {
+            log.warn("选择了应用,用户名不存在");
+            return new UsernameNotFoundException("用户不存在");
+        });
         // 所选用户存在
-        if (user != null) {
-            log.info("根据X-App-Id查询用户，用户存在");
-            boolean passwordMatches = BCRYPT_PATTERN.matcher(password).matches()
-                    // 是密码格式，直接比较值
-                    ? Objects.equals(password, user.getPassword())
-                    // 使用 BCrypt 加密的方式进行匹配
-                    : passwordEncoder.matches(password, user.getPassword());
-            // 用户身份信息校验
-            if (!passwordMatches) {
-                log.warn("根据X-App-Id查询用户，用户密码错误");
-                xAppIdException = new BadCredentialsException("用户密码错误");
-            } else if (!user.getEnabled()) {
-                log.warn("根据X-App-Id查询用户，用户未激活");
-                xAppIdException = new DisabledException("用户未激活");
-            } else if (user.getValidTime().before(new Date())) {
-                log.warn("根据X-App-Id查询用户，账户已过期");
-                xAppIdException = new AccountExpiredException("账户已过期");
-            } else {
-                log.info("根据X-App-Id校验用户成功");
-                // 如果选择应用，并在选择应用下用户没有校验成功，此时需要校验是否是超级管理员
-                if (selectAppId != null) {
-                    log.info("根据X-App-Id校验用户成功,但是选择了应用，需要再次校验用户角色");
-                    // 用户是超级管理员，就通过
-                    if (user.getRoleNames().contains(RoleConst.ROLE_SUPER_ADMIN)) {
-                        log.info("登录成功：选了应用，所选应用下用户校验失败，但是是超级管理员");
-                        // 查询该应用下管理员
-                        BaseUser adminUser = findByUsernameAndAppId(selectAppId, UserConst.ADMIN);
-                        MyAuthentication myAuthentication = new MyAuthentication();
-                        myAuthentication.setId(adminUser.getId());
-                        myAuthentication.setAppId(selectAppId);
-                        myAuthentication.setUsername(adminUser.getUsername());
-                        ArrayList<GrantedAuthority> roles = new ArrayList<>(1);
-                        roles.add(new SimpleGrantedAuthority(RoleConst.ROLE_ADMIN));
-                        myAuthentication.setRoles(roles);
-                        return myAuthentication;
-                    }
-                    // 选择了应用，并不是超级管理员
-                    log.warn("登录失败：选了应用，所选应用下用户校验失败，并且不是超级管理员");
-                    selectAppIdException = new BadCredentialsException("用户密码错误");
-                } else {
-                    // 未选择应用
-                    log.info("登录成功：未选择应用，用户校验成功");
-                    MyAuthentication myAuthentication = new MyAuthentication();
-                    myAuthentication.setId(user.getId());
-                    myAuthentication.setAppId(user.getAppId());
-                    myAuthentication.setUsername(user.getUsername());
-                    myAuthentication.setRoles(listRoleNameByUserId(user.getId()));
-                    return myAuthentication;
-                }
-            }
-        }
+        log.info("根据X-App-Id查询用户，用户存在");
+        boolean passwordMatches = BCRYPT_PATTERN.matcher(password).matches()
+                // 是密码格式，直接比较值
+                ? Objects.equals(password, user.getPassword())
+                // 使用 BCrypt 加密的方式进行匹配
+                : passwordEncoder.matches(password, user.getPassword());
 
-        return null;
-    }
+        // 用户身份信息校验
+        // 密码校验
+        AssertUtil.isTrue(passwordMatches, () -> {
+            log.warn("根据X-App-Id查询用户，用户密码错误");
+            return new BadCredentialsException("用户密码错误");
+        });
 
-    /**
-     * 返回异常
-     * @param selectAppIdException
-     * @param xAppIdException
-     */
-    private RuntimeException throwException(RuntimeException selectAppIdException, RuntimeException xAppIdException) {
-        if (selectAppIdException != null) {
-            log.error("登录失败");
-            return selectAppIdException;
-        } else if (xAppIdException != null) {
-            log.error("登录失败");
-            return xAppIdException;
-        }
+        AssertUtil.isTrue(user.getEnabled(), () -> {
+            log.warn("根据X-App-Id查询用户，用户未激活");
+            return new DisabledException("用户未激活");
+        });
 
-        return new UsernameNotFoundException("用户不存在");
+        AssertUtil.isTrue(user.getValidTime().after(new Date()), () -> {
+            log.warn("根据X-App-Id查询用户，账户已过期");
+            return new AccountExpiredException("账户已过期");
+        });
+
+        // 未选择应用
+        log.info("登录成功：未选择应用，用户校验成功");
+        MyAuthentication myAuthentication = new MyAuthentication();
+        myAuthentication.setId(user.getId());
+        myAuthentication.setAppId(user.getAppId());
+        myAuthentication.setLoginAppId(xAppId);
+        myAuthentication.setUsername(user.getUsername());
+        myAuthentication.setRoles(listRoleNameByUserId(user.getId()));
+        return myAuthentication;
     }
 
     /**

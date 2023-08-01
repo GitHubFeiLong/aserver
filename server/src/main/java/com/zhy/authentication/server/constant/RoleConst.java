@@ -9,11 +9,21 @@ package com.zhy.authentication.server.constant;
  */
 public class RoleConst {
 
+    //~ 服务端预置角色
+    //==================================================================================================================
     /**
      * 超级管理员角色
      */
-    public static final String ROLE_SUPER_ADMIN = "ROLE_SUPER_ADMIN";
+    public static final String ROLE_APP_SUPER_ADMIN = "ROLE_APP_SUPER_ADMIN";
 
+    /**
+     * 创建应用时，创建一个应用管理员在server端
+     */
+    public static final String ROLE_APP_ADMIN = "ROLE_APP_ADMIN";
+
+
+    //~ 客户端预置角色
+    //==================================================================================================================
     /**
      * 应用理员角色
      */
