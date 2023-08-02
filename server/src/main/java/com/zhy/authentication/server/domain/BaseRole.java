@@ -6,10 +6,12 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 角色表
@@ -71,12 +73,14 @@ public class BaseRole extends BasePO implements Serializable {
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
-    @OneToMany(mappedBy = "role")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private List<BaseUserRole> users = new ArrayList<>();
+    @ManyToMany(targetEntity=BaseUser.class, fetch = FetchType.LAZY)
+    @JoinTable(name = "base_user_role", joinColumns = {@JoinColumn(name = "role_id")},
+            inverseJoinColumns={@JoinColumn(name = "user_id")})
+    private List<BaseUser> users = new ArrayList<>();
 
-    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private List<BaseRoleMenu> menus = new ArrayList<>();
+    @ManyToMany(targetEntity=BaseMenu.class, fetch = FetchType.LAZY)
+    @JoinTable(name = "base_role_menu", joinColumns = {@JoinColumn(name = "role_id")},
+            inverseJoinColumns={@JoinColumn(name = "menu_id")})
+    private List<BaseMenu> menus = new ArrayList<>();
 
 }

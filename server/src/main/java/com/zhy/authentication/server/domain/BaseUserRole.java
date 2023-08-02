@@ -1,7 +1,6 @@
 package com.zhy.authentication.server.domain;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -24,12 +23,12 @@ public class BaseUserRole extends BasePO implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("roles")
-    private BaseUser user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("users")
-    private BaseRole role;
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JsonIgnoreProperties("roles")
+    // private BaseUser user;
+    //
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JsonIgnoreProperties("users")
+    // private BaseRole role;
 
 }

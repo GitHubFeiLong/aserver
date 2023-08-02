@@ -132,9 +132,9 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseRole.setName(RoleConst.ROLE_ADMIN);
         baseRole.setRemark("创建应用时，初始管理员角色");
 
-        BaseUserRole baseUserRole = new BaseUserRole();
-        baseUserRole.setUser(baseUser);
-        baseUserRole.setRole(baseRole);
+        // BaseUserRole baseUserRole = new BaseUserRole();
+        // baseUserRole.setUser(baseUser);
+        // baseUserRole.setRole(baseRole);
 
 
 
@@ -145,7 +145,7 @@ public class BaseAppServiceImpl implements BaseAppService {
                 // 新增管理用户
                 baseUserRepository.save(baseUser);
                 baseRoleRepository.save(baseRole);
-                baseUserRoleRepository.save(baseUserRole);
+                // baseUserRoleRepository.save(baseUserRole);
 
                 cleanCache(baseApp.getId());
                 return true;

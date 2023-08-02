@@ -77,58 +77,10 @@ public class BaseUser extends BasePO implements Serializable {
     @Column(name = "remark")
     private String remark;
 
-    /**
-     * 创建时间
-     */
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    /**
-     * 最后修改时间
-     */
-    @Column(name = "last_modified_date")
-    private Date lastModifiedDate;
-
-    /**
-     * 创建人
-     */
-    @Column(name = "created_by")
-    private String createdBy;
-
-    /**
-     * 最后修改人
-     */
-    @Column(name = "last_modified_by")
-    private String lastModifiedBy;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @ManyToMany(targetEntity= BaseRole.class, fetch = FetchType.LAZY)
+    @JoinTable(name = "base_user_role", joinColumns = {@JoinColumn(name = "user_id")},
+            inverseJoinColumns={@JoinColumn(name = "role_id")})
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private List<BaseUserRole> roles = new ArrayList<>();
+    private List<BaseRole> roles = new ArrayList<>();
 
-
-    @Transient
-    private String roleName;
-
-    @Transient
-    private List<String> roleNames;
-
-    @Override
-    public String toString() {
-        return "BaseUser{" +
-                "id=" + id +
-                ", appId=" + appId +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", enabled=" + enabled +
-                ", locked=" + locked +
-                ", validTime=" + validTime +
-                ", remark='" + remark + '\'' +
-                ", createdDate=" + createdDate +
-                ", lastModifiedDate=" + lastModifiedDate +
-                ", createdBy='" + createdBy + '\'' +
-                ", lastModifiedBy='" + lastModifiedBy + '\'' +
-                ", roleName='" + roleName + '\'' +
-                ", roleNames=" + roleNames +
-                '}';
-    }
 }

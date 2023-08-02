@@ -6,10 +6,14 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 菜单表
@@ -129,8 +133,9 @@ public class BaseMenu extends BasePO implements Serializable {
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
 
-    @OneToMany(mappedBy = "menu")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private List<BaseRoleMenu> roles = new ArrayList<>();
+    @ManyToMany(targetEntity= BaseRole.class, fetch = FetchType.LAZY)
+    @JoinTable(name = "base_role_menu", joinColumns = {@JoinColumn(name = "menu_id")},
+            inverseJoinColumns={@JoinColumn(name = "role_id")})
+    private List<BaseRole> roles = new ArrayList<>();
 
 }

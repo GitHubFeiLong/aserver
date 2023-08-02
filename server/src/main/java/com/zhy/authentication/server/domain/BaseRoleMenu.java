@@ -1,7 +1,6 @@
 package com.zhy.authentication.server.domain;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -24,11 +23,11 @@ public class BaseRoleMenu extends BasePO implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JsonIgnoreProperties("menus")
-    private BaseRole role;
+    // @ManyToOne
+    // @JsonIgnoreProperties("menus")
+    // private BaseRole role;
 
-    @ManyToOne
-    @JsonIgnoreProperties("roles")
-    private BaseMenu menu;
+    // @ManyToOne
+    // @JsonIgnoreProperties("roles")
+    // private BaseMenu menu;
 }
