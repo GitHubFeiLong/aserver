@@ -33,12 +33,6 @@ public class BaseUserResource {
     @Resource
     private BaseUserService baseUserService;
 
-    /**
-     * 登录接口
-     * @param username
-     * @param password
-     * @return
-     */
     @PostMapping("/login")
     @ApiOperation(value = "登录(password)")
     @ApiImplicitParams({
