@@ -2,6 +2,7 @@ package com.zhy.authentication.server.service.dto;
 
 import lombok.Data;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -23,17 +24,12 @@ public class LoginDTO {
 
     private String token;
 
-    private Set<String> roles;
-
-    private List<BaseMenuDTO> menus;
+    private Collection<String> roles;
 
     /**
-     * 选择应用的首页
+     * 应用的首页地址
      */
-    private String selectAppIdHomePage;
-
-    /**
-     * 请求头应用的首页
-     */
-    private String xAppIdHomePage;
+    private String homePage;
 }
+
+

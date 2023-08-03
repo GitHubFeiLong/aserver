@@ -17,12 +17,12 @@ import java.util.List;
 public interface BaseUserRoleRepository extends JpaRepository<BaseUserRole, Long>, JpaSpecificationExecutor<BaseUserRole> {
 
 
-    List<BaseUserRole> findAllByUserId(Long userId);
+    // List<BaseUserRole> findAllByUserId(Long userId);
 
     /**
      * 查询角色有多少用户
      * @param roleId
      * @return
      */
-    int countByRoleId(Long roleId);
+    // int countByRoleId(Long roleId);
 }

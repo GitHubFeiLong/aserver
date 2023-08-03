@@ -28,14 +28,14 @@ public class MyAuthentication implements Authentication {
     private Long id;
 
     /**
-     * 应用id
+     * 用户所在应用id
      */
     private Long appId;
 
     /**
-     * 登录的appId
+     * 真实应用id（例如xx应用管理员，app_id是认证服务应用的app_id，但是real_app_id是自己所管理xx应用的app_id）
      */
-    private Long loginAppId;
+    private Long realAppId;
 
     /**
      * 用户名
@@ -46,7 +46,6 @@ public class MyAuthentication implements Authentication {
      * 角色
      */
     private List<GrantedAuthority> roles;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -103,10 +102,5 @@ public class MyAuthentication implements Authentication {
     public boolean superAdmin() {
         return this.roles.stream().filter(f -> Objects.equals(f.getAuthority(), ROLE_APP_SUPER_ADMIN)).findFirst().isPresent();
     }
-    /**
-     * 断言
-     */
-    public void assertSuperAdmin() {
-        AssertUtil.isTrue(superAdmin(), () -> ClientException.clientByForbidden());
-    }
+
 }

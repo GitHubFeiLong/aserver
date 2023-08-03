@@ -1,5 +1,7 @@
 package com.zhy.authentication.server.service.impl;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.zhxu.bs.BeanSearcher;
 import cn.zhxu.bs.SearchResult;
@@ -12,16 +14,14 @@ import com.goudong.boot.web.core.ServerException;
 import com.goudong.core.lang.PageResult;
 import com.goudong.core.util.AssertUtil;
 import com.goudong.core.util.ListUtil;
+import com.mysql.cj.xdevapi.Client;
 import com.zhy.authentication.server.constant.RoleConst;
 import com.zhy.authentication.server.constant.UserConst;
 import com.zhy.authentication.server.domain.BaseApp;
 import com.zhy.authentication.server.domain.BaseRole;
 import com.zhy.authentication.server.domain.BaseUser;
 import com.zhy.authentication.server.domain.BaseUserRole;
-import com.zhy.authentication.server.repository.BaseAppRepository;
-import com.zhy.authentication.server.repository.BaseRoleRepository;
-import com.zhy.authentication.server.repository.BaseUserRepository;
-import com.zhy.authentication.server.repository.BaseUserRoleRepository;
+import com.zhy.authentication.server.repository.*;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
 import com.zhy.authentication.server.rest.req.search.BaseAppDropDown;
@@ -31,6 +31,7 @@ import com.zhy.authentication.server.service.dto.BaseAppDTO;
 import com.zhy.authentication.server.service.dto.MyAuthentication;
 import com.zhy.authentication.server.service.mapper.BaseAppMapper;
 import com.zhy.authentication.server.util.PageResultUtil;
+import com.zhy.authentication.server.util.SecurityContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -82,7 +83,7 @@ public class BaseAppServiceImpl implements BaseAppService {
     private BaseUserRepository baseUserRepository;
 
     @Resource
-    private BaseUserRoleRepository baseUserRoleRepository;
+    private BaseMenuRepository baseMenuRepository;
 
     @Resource
     private TransactionTemplate transactionTemplate;
@@ -97,10 +98,12 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public BaseAppDTO save(BaseAppCreate req) {
-        log.debug("Request to save BaseApp : {}", req);
-        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        AssertUtil.isTrue(authentication.superAdmin(), () -> ClientException.clientByForbidden());
+        AssertUtil.isFalse(req.getName().equals(RoleConst.ROLE_APP_SUPER_ADMIN), () -> ClientException.client("应用已存在"));
+        AssertUtil.isFalse(req.getName().equals(RoleConst.ROLE_APP_ADMIN), () -> ClientException.client("应用已存在"));
 
+        MyAuthentication authentication = SecurityContextUtil.get();
+
+        // 新增应用
         BaseApp baseApp = new BaseApp();
         baseApp.setId(IdUtil.getSnowflake().nextId());
         baseApp.setName(req.getName());
@@ -109,34 +112,21 @@ public class BaseAppServiceImpl implements BaseAppService {
         baseApp.setSecret(UUID.randomUUID().toString().replace("-", ""));
         baseApp.setEnabled(req.getEnabled());
 
-        /*
-            新增服务端管理员
-         */
-        
-
-        /*
-            新增客户端管理员
-         */
-        // 新增管理用户
+        // 新增应用管理员
         BaseUser baseUser = new BaseUser();
-        baseUser.setAppId(baseApp.getId());
-        baseUser.setUsername(UserConst.ADMIN);
+        // 用户所在应用
+        baseUser.setAppId(authentication.getRealAppId());
+        // 用户真实所在应用
+        baseUser.setRealAppId(baseApp.getId());
+        baseUser.setUsername(req.getName());
         baseUser.setPassword(passwordEncoder.encode("123456"));
         baseUser.setEnabled(true);
         baseUser.setLocked(false);
-        baseUser.setRemark("创建应用时，初始管理员");
+        baseUser.setValidTime(DateUtil.parse("2099-12-31 00:00:00", DatePattern.NORM_DATETIME_FORMATTER));
+        baseUser.setRemark("应用管理员");
 
-        // 新增角色
-        BaseRole baseRole = new BaseRole();
-        baseRole.setAppId(baseApp.getId());
-        baseRole.setName(RoleConst.ROLE_ADMIN);
-        baseRole.setRemark("创建应用时，初始管理员角色");
-
-        // BaseUserRole baseUserRole = new BaseUserRole();
-        // baseUserRole.setUser(baseUser);
-        // baseUserRole.setRole(baseRole);
-
-
+        // 设置角色
+        baseUser.setRoles(ListUtil.newArrayList(baseRoleRepository.findByAppAdmin()));
 
         transactionTemplate.execute(status -> {
             try {
@@ -144,9 +134,6 @@ public class BaseAppServiceImpl implements BaseAppService {
                 baseAppRepository.save(baseApp);
                 // 新增管理用户
                 baseUserRepository.save(baseUser);
-                baseRoleRepository.save(baseRole);
-                // baseUserRoleRepository.save(baseUserRole);
-
                 cleanCache(baseApp.getId());
                 return true;
             } catch (Exception e) {
@@ -165,9 +152,6 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public BaseAppDTO update(BaseAppUpdate req) {
-        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        AssertUtil.isTrue(authentication.superAdmin(), () -> ClientException.clientByForbidden());
-
         BaseApp baseApp = baseAppRepository.findById(req.getId()).orElseThrow(() -> ClientException
                 .builder()
                 .clientMessageTemplate("应用id:{}不存在")
@@ -192,7 +176,6 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public Optional<BaseAppDTO> findOne(Long id) {
-        log.debug("Request to get BaseApp : {}", id);
         String key = APP_ID.getFullKey(id);
         if (redisTool.hasKey(key)) {
             String appStr = (String)redisTool.get(APP_ID, id);
@@ -227,7 +210,6 @@ public class BaseAppServiceImpl implements BaseAppService {
         }
     }
 
-
     /**
      * 删除应用
      * @param id
@@ -235,11 +217,27 @@ public class BaseAppServiceImpl implements BaseAppService {
      */
     @Override
     public void delete(Long id) {
-        MyAuthentication authentication = (MyAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        AssertUtil.isTrue(authentication.superAdmin(), () -> ClientException.clientByForbidden());
-        log.debug("Request to delete BaseApp : {}", id);
-        baseAppRepository.deleteById(id);
+        AssertUtil.isTrue(baseAppRepository.existsById(id), () -> ClientException.client("应用不存在"));
+        transactionTemplate.execute(status -> {
+            try {
+                // 删除应用
+                baseAppRepository.deleteById(id);
+                // 删除角色
+                int delRoles = baseRoleRepository.deleteByAppId(id);
+                log.info("删除{}个角色", delRoles);
+                int delUsers = baseUserRepository.deleteByAppId(id);
+                log.info("删除{}个用户", delUsers);
+                int delMenus = baseMenuRepository.deleteByAppId(id);
+                log.info("删除{}个菜单", delMenus);
+
+                return true;
+            } catch (Exception e) {
+                status.setRollbackOnly();
+                throw new ServerException("事务异常(删除应用)：" + e.getMessage());
+            }
+        });
         cleanCache(id);
+        log.info("删除应用成功！");
     }
 
     /**

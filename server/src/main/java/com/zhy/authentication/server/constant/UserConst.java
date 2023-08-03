@@ -11,6 +11,7 @@ package com.zhy.authentication.server.constant;
 public class UserConst {
     //~fields
     //==================================================================================================================
+    @Deprecated
     public static final String ADMIN = "admin";
 
     //~methods

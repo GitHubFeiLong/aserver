@@ -10,12 +10,12 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = {BaseUserMapper.class, BaseRoleMapper.class})
 public interface BaseUserRoleMapper extends EntityMapper<BaseUserRoleDTO, BaseUserRole> {
 
-    @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "role.id", target = "roleId")
+    // @Mapping(source = "user.id", target = "userId")
+    // @Mapping(source = "role.id", target = "roleId")
     BaseUserRoleDTO toDto(BaseUserRole baseUserRole);
 
-    @Mapping(source = "userId", target = "user")
-    @Mapping(source = "roleId", target = "role")
+    // @Mapping(source = "userId", target = "user")
+    // @Mapping(source = "roleId", target = "role")
     BaseUserRole toEntity(BaseUserRoleDTO baseUserRoleDTO);
 
     default BaseUserRole fromId(Long id) {

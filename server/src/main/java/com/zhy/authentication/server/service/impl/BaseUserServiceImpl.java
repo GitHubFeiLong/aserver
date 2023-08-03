@@ -12,21 +12,16 @@ import com.goudong.core.util.AssertUtil;
 import com.goudong.core.util.CollectionUtil;
 import com.zhy.authentication.common.core.Jwt;
 import com.zhy.authentication.common.core.UserToken;
-import com.zhy.authentication.server.domain.BaseApp;
-import com.zhy.authentication.server.domain.BaseMenu;
-import com.zhy.authentication.server.domain.BaseUser;
-import com.zhy.authentication.server.domain.BaseUserRole;
+import com.zhy.authentication.server.domain.*;
 import com.zhy.authentication.server.repository.*;
 import com.zhy.authentication.server.rest.req.BaseUserCreate;
 import com.zhy.authentication.server.rest.req.BaseUserUpdate;
 import com.zhy.authentication.server.rest.req.search.BaseUserDropDown;
 import com.zhy.authentication.server.rest.req.search.BaseUserPage;
 import com.zhy.authentication.server.rest.req.search.SelectUsersRoleNames;
+import com.zhy.authentication.server.service.BaseAppService;
 import com.zhy.authentication.server.service.BaseUserService;
-import com.zhy.authentication.server.service.dto.BaseMenuDTO;
-import com.zhy.authentication.server.service.dto.BaseUserDTO;
-import com.zhy.authentication.server.service.dto.LoginDTO;
-import com.zhy.authentication.server.service.dto.MyAuthentication;
+import com.zhy.authentication.server.service.dto.*;
 import com.zhy.authentication.server.service.mapper.BaseMenuMapper;
 import com.zhy.authentication.server.service.mapper.BaseUserMapper;
 import com.zhy.authentication.server.util.PageResultUtil;
@@ -36,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -74,6 +70,9 @@ public class BaseUserServiceImpl implements BaseUserService {
 
     @Resource
     private BaseAppRepository baseAppRepository;
+
+    @Resource
+    private BaseAppService baseAppService;
 
     @Resource
     private BaseUserMapper baseUserMapper;
@@ -211,46 +210,47 @@ public class BaseUserServiceImpl implements BaseUserService {
     public LoginDTO login(Long id) {
         BaseUser baseUser = baseUserRepository.findById(id).get();
 
-        List<BaseUserRole> allByUserId = baseUserRoleRepository.findAllByUserId(id);
-        Set<String> roles = new HashSet<>();
-        Map<String, BaseMenuDTO> menuMap = new HashMap<>();
-        allByUserId.stream()
-                .flatMap(m -> Stream.of(m.getRole().getMenus()))
-                .flatMap(Collection::stream)
-                .forEach(p -> {
-                    // 角色
-                    String name = p.getRole().getName();
-                    roles.add(name);
-                    // 菜单
-                    BaseMenu menu = p.getMenu();
-                    if (!menuMap.containsKey(menu.getPermissionId())) {
-                        BaseMenuDTO baseMenuDTO = baseMenuMapper.toDto(menu);
-                        menuMap.put(menu.getPermissionId(), baseMenuDTO);
-                    }
-                });
+        // List<BaseUserRole> allByUserId = baseUserRoleRepository.findAllByUserId(id);
+        // Set<String> roles = new HashSet<>();
+        // Map<String, BaseMenuDTO> menuMap = new HashMap<>();
+        // allByUserId.stream()
+        //         .flatMap(m -> Stream.of(m.getRole().getMenus()))
+        //         .flatMap(Collection::stream)
+        //         .forEach(p -> {
+        //             // 角色
+        //             String name = p.getRole().getName();
+        //             roles.add(name);
+        //             // 菜单
+        //             BaseMenu menu = p.getMenu();
+        //             if (!menuMap.containsKey(menu.getPermissionId())) {
+        //                 BaseMenuDTO baseMenuDTO = baseMenuMapper.toDto(menu);
+        //                 menuMap.put(menu.getPermissionId(), baseMenuDTO);
+        //             }
+        //         });
+        //
+        // BaseApp baseApp = baseAppRepository.findById(baseUser.getAppId()).orElseThrow(() -> ClientException.client("应用无效"));
+        //
+        // // 创建token
+        // Jwt jwt = new Jwt(1, TimeUnit.DAYS, baseApp.getSecret());
+        // String token = jwt.generateToken(new UserToken(baseUser.getId(), baseApp.getId(), baseUser.getUsername(), roles));
+        //
+        // LoginDTO loginDTO = new LoginDTO();
+        // loginDTO.setId(baseUser.getId());
+        // loginDTO.setAppId(baseUser.getAppId());
+        // loginDTO.setUsername(baseUser.getUsername());
+        // loginDTO.setToken(token);
+        // loginDTO.setRoles(roles);
+        //
+        // List<BaseMenuDTO> menuDTOS = new ArrayList<>(menuMap.values());
+        //
+        // Collections.sort(menuDTOS, (o1, o2) -> ((BaseMenuDTO)o1).getSortNum() - ((BaseMenuDTO)o2).getSortNum());
+        //
+        // // Tree.getInstance().id(BaseMenuDTO::getId).parentId(BaseMenuDTO::getParentId).children(BaseMenuDTO::getChildren).to
+        //
+        // loginDTO.setMenus(menuDTOS);
 
-        BaseApp baseApp = baseAppRepository.findById(baseUser.getAppId()).orElseThrow(() -> ClientException.client("应用无效"));
-
-        // 创建token
-        Jwt jwt = new Jwt(1, TimeUnit.DAYS, baseApp.getSecret());
-        String token = jwt.generateToken(new UserToken(baseUser.getId(), baseApp.getId(), baseUser.getUsername(), roles));
-
-        LoginDTO loginDTO = new LoginDTO();
-        loginDTO.setId(baseUser.getId());
-        loginDTO.setAppId(baseUser.getAppId());
-        loginDTO.setUsername(baseUser.getUsername());
-        loginDTO.setToken(token);
-        loginDTO.setRoles(roles);
-
-        List<BaseMenuDTO> menuDTOS = new ArrayList<>(menuMap.values());
-
-        Collections.sort(menuDTOS, (o1, o2) -> ((BaseMenuDTO)o1).getSortNum() - ((BaseMenuDTO)o2).getSortNum());
-
-        // Tree.getInstance().id(BaseMenuDTO::getId).parentId(BaseMenuDTO::getParentId).children(BaseMenuDTO::getChildren).to
-
-        loginDTO.setMenus(menuDTOS);
-
-        return loginDTO;
+        // return loginDTO;
+        return null;
     }
 
     /**
@@ -260,29 +260,30 @@ public class BaseUserServiceImpl implements BaseUserService {
      * @return
      */
     @Override
+    @Transactional(readOnly = true)
     public LoginDTO login(MyAuthentication myAuthentication) {
+        log.info("认证成功，添加角色权限");
         LoginDTO loginDTO = new LoginDTO();
-        // 所选应用是自己所在应用
-        if(myAuthentication.getAppId().equals(myAuthentication.getSelectAppId())) {
-            log.info("所选应用和用户所在应用相同");
-            BaseApp baseApp = baseAppRepository.findById(myAuthentication.getAppId()).get();
-            loginDTO.setId(myAuthentication.getId());
-            loginDTO.setUsername(myAuthentication.getUsername());
-            loginDTO.setAppId(myAuthentication.getAppId());
-            // 创建token
-            Jwt jwt = new Jwt(1, TimeUnit.DAYS, baseApp.getSecret());
-            // String token = jwt.generateToken(new UserToken(myAuthentication.getId(), baseApp.getId(), myAuthentication.getUsername(), roles));
-            loginDTO.setToken(null);
-            // 设置应用首页地址
-            loginDTO.setSelectAppIdHomePage(baseApp.getHomePage());
-            loginDTO.setXAppIdHomePage(baseApp.getHomePage());
-            return null;
-        }
-        log.info("所选应用和用户所在应用不相同：超级管理员");
-        return null;
+
+        // 查询角色，权限使用
+        BaseUser baseUser = baseUserRepository.findById(myAuthentication.getId()).get();
+        BaseAppDTO baseAppDTO = baseAppService.findOne(myAuthentication.getAppId()).get();
+
+        // 设置角色
+        List<String> roles = baseUser.getRoles().stream().map(BaseRole::getName).collect(Collectors.toList());
+
+        loginDTO.setId(myAuthentication.getId());
+        loginDTO.setUsername(myAuthentication.getUsername());
+        loginDTO.setAppId(myAuthentication.getAppId());
+        loginDTO.setRoles(roles);
+        // 创建token
+        Jwt jwt = new Jwt(1, TimeUnit.DAYS, baseAppDTO.getSecret());
+        String token = jwt.generateToken(new UserToken(myAuthentication.getId(), myAuthentication.getAppId(), myAuthentication.getRealAppId(),myAuthentication.getUsername(), roles));
+        loginDTO.setToken(token);
+        // 设置应用首页地址
+        loginDTO.setHomePage(baseAppDTO.getHomePage());
+        return loginDTO;
     }
-
-
 
     /**
      * 分页查询

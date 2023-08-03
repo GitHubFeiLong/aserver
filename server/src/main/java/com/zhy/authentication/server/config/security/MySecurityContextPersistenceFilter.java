@@ -130,6 +130,7 @@ public class MySecurityContextPersistenceFilter extends OncePerRequestFilter {
             MyAuthentication myAuthentication = new MyAuthentication();
             myAuthentication.setId(userToken.getId());
             myAuthentication.setAppId(userToken.getAppId());
+            myAuthentication.setRealAppId(userToken.getRealAppId());
             myAuthentication.setUsername(userToken.getUsername());
             myAuthentication.setRoles(userToken.getRoles().stream().map(m -> new SimpleGrantedAuthority(m)).collect(Collectors.toList()));
             // 官网建议，避免跨多个线程的竞态条件

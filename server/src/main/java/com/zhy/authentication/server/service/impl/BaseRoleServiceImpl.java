@@ -150,7 +150,8 @@ public class BaseRoleServiceImpl implements BaseRoleService {
         }
 
         // 查询角色下的用户
-        int count = baseUserRoleRepository.countByRoleId(id);
+        // int count = baseUserRoleRepository.countByRoleId(id);
+        int count = 0;
 
         AssertUtil.isTrue(count == 0, () -> ClientException.client("删除角色失败"));
         baseRoleRepository.deleteById(id);

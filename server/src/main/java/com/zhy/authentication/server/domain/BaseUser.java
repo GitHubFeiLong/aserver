@@ -4,6 +4,7 @@ package com.zhy.authentication.server.domain;
 import lombok.Data;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.CollectionId;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -34,6 +35,13 @@ public class BaseUser extends BasePO implements Serializable {
     @NotNull
     @Column(name = "app_id", nullable = false)
     private Long appId;
+
+    /**
+     * 真实应用id（例如xx应用管理员，app_id是认证服务应用的app_id，但是real_app_id是自己所管理xx应用的app_id）
+     */
+    @NotNull
+    @Column(name = "real_app_id", nullable = false)
+    private Long realAppId;
 
     /**
      * 用户名
@@ -80,7 +88,21 @@ public class BaseUser extends BasePO implements Serializable {
     @ManyToMany(targetEntity= BaseRole.class, fetch = FetchType.LAZY)
     @JoinTable(name = "base_user_role", joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns={@JoinColumn(name = "role_id")})
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    // @Cache(usage = CacheConcurrencyStrategy.TRANSACTIONAL)
     private List<BaseRole> roles = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return "BaseUser{" +
+                "id=" + id +
+                ", appId=" + appId +
+                ", realAppId=" + realAppId +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", locked=" + locked +
+                ", validTime=" + validTime +
+                ", remark='" + remark + '\'' +
+                '}';
+    }
 }

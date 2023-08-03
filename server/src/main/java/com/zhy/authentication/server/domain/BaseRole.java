@@ -83,4 +83,17 @@ public class BaseRole extends BasePO implements Serializable {
             inverseJoinColumns={@JoinColumn(name = "menu_id")})
     private List<BaseMenu> menus = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return "BaseRole{" +
+                "id=" + id +
+                ", appId=" + appId +
+                ", name='" + name + '\'' +
+                ", remark='" + remark + '\'' +
+                ", createdDate=" + createdDate +
+                ", lastModifiedDate=" + lastModifiedDate +
+                ", createdBy='" + createdBy + '\'' +
+                ", lastModifiedBy='" + lastModifiedBy + '\'' +
+                '}';
+    }
 }

@@ -138,4 +138,5 @@ public class BaseMenu extends BasePO implements Serializable {
             inverseJoinColumns={@JoinColumn(name = "role_id")})
     private List<BaseRole> roles = new ArrayList<>();
 
+
 }

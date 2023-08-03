@@ -18,6 +18,4 @@ import java.util.List;
 @Repository
 public interface BaseRoleMenuRepository extends JpaRepository<BaseRoleMenu, Long>, JpaSpecificationExecutor<BaseRoleMenu> {
 
-
-    List<BaseRoleMenu> findAllByRoleIn(List<BaseRole> roles);
 }

@@ -2,6 +2,7 @@ package com.zhy.authentication.server.rest;
 
 import com.goudong.core.lang.PageResult;
 import com.goudong.core.lang.Result;
+import com.zhy.authentication.server.constant.RoleConst;
 import com.zhy.authentication.server.rest.req.BaseAppCreate;
 import com.zhy.authentication.server.rest.req.BaseAppUpdate;
 import com.zhy.authentication.server.rest.req.search.BaseAppDropDown;
@@ -13,6 +14,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,9 +36,8 @@ import static com.zhy.authentication.server.constant.SwaggerConst.DROP_DOWN_GROU
 @RestController
 @RequestMapping("/app")
 @Api(tags = "应用管理")
+@Secured(value = RoleConst.ROLE_APP_SUPER_ADMIN) // 只有该角色才能处理应用
 public class BaseAppResource {
-
-    private final Logger log = LoggerFactory.getLogger(BaseAppResource.class);
 
     @Resource
     private BaseAppService baseAppService;

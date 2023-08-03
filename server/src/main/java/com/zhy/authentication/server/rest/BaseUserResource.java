@@ -46,7 +46,7 @@ public class BaseUserResource {
             @ApiImplicitParam(name = "username", value = "用户名", required = true),
             @ApiImplicitParam(name = "password", value = "密码", required = true),
     })
-    public Result login (String username, String password) {
+    public Result login () {
         return Result.ofSuccess();
     }
 

@@ -72,7 +72,8 @@ public class BaseUserRoleServiceImpl implements BaseUserRoleService {
     @Transactional(readOnly = true)
     public List<BaseUserRole> findAllByUserId(Long userId) {
         log.info("=================");
-        List<BaseUserRole> all = baseUserRoleRepository.findAllByUserId(userId);
+        // List<BaseUserRole> all = baseUserRoleRepository.findAllByUserId(userId);
+        List<BaseUserRole> all = null;
         log.info("=================");
         return all;
     }

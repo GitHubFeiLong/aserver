@@ -23,12 +23,8 @@ public class BaseUserRole extends BasePO implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JsonIgnoreProperties("roles")
-    // private BaseUser user;
+    // private Long user_id;
     //
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JsonIgnoreProperties("users")
-    // private BaseRole role;
+    // private Long role_id;
 
 }

@@ -19,7 +19,7 @@ public class BaseAppCreate {
     /**
      * 应用名称
      */
-    @NotBlank
+    @NotBlank(message = "name不能为空")
     @Size(max = 16)
     @ApiModelProperty(value = "应用名称", required = true)
     private String name;
@@ -27,17 +27,16 @@ public class BaseAppCreate {
     /**
      * 应用首页
      */
-    @Size(max = 255)
+    @Size(max = 255, message = "首页地址不能超过255")
     @ApiModelProperty(value = "应用首页")
     private String homePage;
-
 
     /**
      * 是否激活应用
      */
     @NotNull
     @ApiModelProperty(value = "是否激活应用", required = true)
-    private Boolean enabled;
+    private Boolean enabled = true;
 
     /**
      * 备注
