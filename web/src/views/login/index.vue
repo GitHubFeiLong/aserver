@@ -10,14 +10,14 @@
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
-        <el-select
-          v-model="loginForm.selectAppId"
-          placeholder=""
-          name="username"
-          type="text"
-          tabindex="1"
-          autocomplete="on"
-        />
+        <el-select v-model="loginForm.selectAppId" width="85%" placeholder="请选择应用登录" clearable>
+          <el-option
+            v-for="item in apps"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id">
+          </el-option>
+        </el-select>
       </el-form-item>
 
       <el-form-item prop="username">
@@ -75,6 +75,7 @@
 
 <script>
 import SocialSign from './components/SocialSignin'
+import {dropDownAllAppApi} from '@/api/dropDown';
 
 export default {
   name: 'Login',
@@ -82,13 +83,13 @@ export default {
   data() {
     return {
       loginForm: {
-        appId: 'gdmty2nzc3otq1mdczmdqynjm2oa',
+        selectAppId: '',
         username: 'admin',
         password: 'admin'
       },
       // 规则
       loginRules: {
-        appId: [{ required: true, trigger: 'blur' }],
+        selectAppId: [{ required: true, trigger: 'blur' }],
         username: [{ required: true, trigger: 'blur' }],
         password: [{ required: true, trigger: 'blur' }]
       },
@@ -97,7 +98,8 @@ export default {
       loading: false,
       showDialog: false,
       redirect: undefined,
-      otherQuery: {}
+      otherQuery: {},
+      apps: []
     }
   },
   watch: {
@@ -116,6 +118,12 @@ export default {
     // window.addEventListener('storage', this.afterQRScan)
   },
   mounted() {
+    // 获取应用下拉
+    dropDownAllAppApi().then(data => {
+      console.log(data);
+      this.apps = data
+    })
+
     if (this.loginForm.username === '') {
       this.$refs.username.focus()
     } else if (this.loginForm.password === '') {
@@ -187,11 +195,12 @@ $cursor: #fff;
 
 /* reset element-ui css */
 .login-container {
+  .el-input,.el-select {
+    width: 418px;
+  }
   .el-input {
     display: inline-block;
     height: 47px;
-    width: 85%;
-
     input {
       background: transparent;
       border: 0px;

@@ -13,7 +13,7 @@ import { DO_NOT_HANDLE_ERROR_MESSAGE } from "@/constant/DataMapConst";
 // 按照axios官方提示需要引入这两步
 const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
-const appId = 'gd$1$aMTY2Nzc3OTQ1MDczMDQyNjM2OA'
+const appId = '1'
 /*
   记录下笔记：
   1. 顺序大致如下 ：请求拦截器 -> 响应拦截器 -> 自定义的catch -> 响应拦截器里的catch

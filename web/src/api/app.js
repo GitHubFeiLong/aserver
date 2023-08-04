@@ -1,5 +1,14 @@
 import request from '@/utils/request'
 
+export function dropDownAllAppApi() {
+  return request({
+    url: `/api/oauth2/drop-down/base-app/all-drop-down`,
+    method: 'get',
+    params: page,
+  })
+}
+
+//========
 /**
  * 列表的分页查询
  */

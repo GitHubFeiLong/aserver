@@ -1,5 +1,7 @@
 /** 一些公用的信息*/
 
+// 接口前缀
+export const API_PREFIX = "/api/authentication-server";
 /**
  * 用户下拉选
  */

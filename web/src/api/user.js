@@ -1,10 +1,13 @@
 import request from '@/utils/request'
+import {API_PREFIX} from "@/constant/commons";
 
 export function login(data) {
-  const username = data.username;
-  const password = data.password;
+  const username = encodeURI(data.username);
+  const password = encodeURI(data.password);
+  console.log(password)
+  const selectAppId = data.selectAppId ? data.selectAppId : null;
   return request({
-    url: `/api/oauth2/authentication/login?username=${username}&password=${password}`,
+    url: `${API_PREFIX}/user/login?username=${username}&password=${password}&appId=${selectAppId}`,
     method: 'post'
   })
 }
