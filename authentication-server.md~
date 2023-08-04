@@ -78,7 +78,7 @@
 	exportControl 	"Public"
 	global     	TRUE
 	logical_models 	(list unit_reference_list
-	    (object Class "超级管理员（sadmin）"
+	    (object Class "超级管理员（admin）"
 		quid       	"64BF222301D4"
 		stereotype 	"Actor"
 		visible_modules 	(list dependency_list
@@ -105,8 +105,20 @@
 		    (object Dependency_Relationship
 			quid       	"64BF28920037"
 			supplier   	"Use Case View::登录::登录"
-			quidu      	"64BF28720214")))
-	    (object Class "管理员（admin）"
+			quidu      	"64BF28720214")
+		    (object Dependency_Relationship
+			quid       	"64CBA71900F5"
+			supplier   	"Use Case View::下拉::应用下拉"
+			quidu      	"64CBA6D503DD")
+		    (object Dependency_Relationship
+			quid       	"64CBA7300116"
+			supplier   	"Use Case View::下拉::角色下拉"
+			quidu      	"64CBA70900D7")
+		    (object Dependency_Relationship
+			quid       	"64CBA7320355"
+			supplier   	"Use Case View::下拉::菜单下拉"
+			quidu      	"64CBA70F0277")))
+	    (object Class "应用管理员"
 		quid       	"64BF23A90334"
 		stereotype 	"Actor"
 		visible_modules 	(list dependency_list
@@ -126,10 +138,6 @@
 			quid       	"64BF24B30010"
 			supplier   	"Use Case View::角色管理::分页查询角色"
 			quidu      	"64BF24260080")
-		    (object Dependency_Relationship
-			quid       	"64BF24B602FA"
-			supplier   	"Use Case View::角色管理::角色下拉"
-			quidu      	"64BF249A028E")
 		    (object Dependency_Relationship
 			quid       	"64BF250300FF"
 			supplier   	"Use Case View::用户管理::新增用户"
@@ -173,7 +181,19 @@
 		    (object Dependency_Relationship
 			quid       	"64BF29BA03D7"
 			supplier   	"Use Case View::用户管理::查询token用户信息"
-			quidu      	"64BF29A4022A")))
+			quidu      	"64BF29A4022A")
+		    (object Dependency_Relationship
+			quid       	"64CBA71C0069"
+			supplier   	"Use Case View::下拉::角色下拉"
+			quidu      	"64CBA70900D7")
+		    (object Dependency_Relationship
+			quid       	"64CBA74C0168"
+			supplier   	"Use Case View::下拉::应用下拉"
+			quidu      	"64CBA6D503DD")
+		    (object Dependency_Relationship
+			quid       	"64CBA75102C7"
+			supplier   	"Use Case View::下拉::菜单下拉"
+			quidu      	"64CBA70F0277")))
 	    (object Class "普通用户"
 		quid       	"64BF23E20194"
 		stereotype 	"Actor"
@@ -181,27 +201,17 @@
 		    (object Dependency_Relationship
 			quid       	"64BF289703B1"
 			supplier   	"Use Case View::登录::登录"
-			quidu      	"64BF28720214")))
+			quidu      	"64BF28720214")
+		    (object Dependency_Relationship
+			quid       	"64CBA71E02FA"
+			supplier   	"Use Case View::下拉::菜单下拉"
+			quidu      	"64CBA70F0277")))
 	    (object Class_Category "登录"
 		quid       	"64BF21D5007B"
 		exportControl 	"Public"
 		logical_models 	(list unit_reference_list
 		    (object UseCase "登录"
 			quid       	"64BF28720214"
-			documentation 	
-|用户使用浏览器请求登录页面
-|1. 选择需要登录的应用(应用配置了重定向首页)，可选
-|2. 输入正确的用户名和密码
-|3. 登录接口成功后，然后跳转到指定页面
-|
-|注意：
-|1. 选择应用只针对超级管理员和管理员有效
-|2. 超级管理员可以登录所有应用，并跳转到所选应用的主页，
-|3. 管理员可以选择自己所在的应用和server应用登录进去
-|4. 普通用户不需要选应用，如果选应用必须选择自己所在的应用。
-|
-|
-			
 			statemachine 	(object State_Machine "State/Activity Model"
 			    quid       	"64BFB4960159"
 			    states     	(list States
@@ -361,14 +371,10 @@
 					quid       	"64BFB8250342"))
 				(object State_Transition
 				    quid       	"64BFB91201E2"
-				    documentation 	
-|选择的应用下，用户不存在，再次查询客户端appId下用户是否存在。
-|这里再根据X-App-Id查询用户是有原因的：
-|因为超级管理员可以登录其它应用，但是在其它应用下没有超级管理员用户信息。
-				    
+				    documentation 	"选择的应用下，用户不存在，直接失败"
 				    label      	""
-				    supplier   	"Use Case View::登录::登录::State/Activity Model::再次查询X-App-Id下用户"
-				    supplier_quidu 	"64C06E62039D"
+				    supplier   	"Use Case View::登录::登录::State/Activity Model::返回登录失败"
+				    supplier_quidu 	"64BFB98E035E"
 				    client     	"Use Case View::登录::登录::State/Activity Model::appId下用户是否存在"
 				    client_quidu 	"64BFB65E03A2"
 				    Event      	(object Event "否"
@@ -859,7 +865,9 @@
 					    height     	106
 					    annotation 	1
 					    autoResize 	TRUE)
-					(object TransView "" @10
+					(object DecisionView "appId下用户是否存在" @10
+					    Parent_View 	@1
+					    location   	(1688, 1259)
 					    font       	(object Font
 						size       	10
 						face       	"Arial"
@@ -871,6 +879,1271 @@
 						default_color 	TRUE)
 					    label      	(object SegLabel @11
 						Parent_View 	@10
+						location   	(1197, 1228)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor     	1
+						nlines     	1
+						max_width  	451
+						justify    	1
+						label      	"appId下用户是否存在"
+						pctDist    	-4.770517
+						height     	258
+						orientation 	1)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB65E03A2"
+					    autoResize 	TRUE)
+					(object TransView "" @12
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64BFB73E029E"
+					    client     	@9
+					    supplier   	@10
+					    vertices   	(list Points
+						(1688, 1050)
+						(1688, 1222))
+					    line_style 	3
+					    origin_attachment 	(1688, 1050)
+					    terminal_attachment 	(1688, 1222)
+					    x_offset   	FALSE)
+					(object ActivityStateView "校验用户" @13
+					    Parent_View 	@1
+					    location   	(1687, 1609)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@13
+						location   	(1687, 1612)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"校验用户")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB674000D"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object NoteView @14
+					    Parent_View 	@1
+					    location   	(2422, 194)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@14
+						location   	(2037, 57)
+						fill_color 	13434879
+						nlines     	5
+						max_width  	734
+						justify    	1
+						label      	
+|提交的信息如下：
+|X-App-Id: 请求头上的客户端应用id 
+|appId：选择登录的应用id
+|username：用户名
+|password：密码
+						)
+					    line_color 	3342489
+					    fill_color 	13434879
+					    width      	794
+					    height     	287)
+					(object AttachView "" @15
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    client     	@4
+					    supplier   	@14
+					    vertices   	(list Points
+						(1838, 344)
+						(2024, 295))
+					    line_style 	0)
+					(object ActivityStateView "查询X-App-Id 下用户" @16
+					    Parent_View 	@1
+					    location   	(3987, 697)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@16
+						location   	(3987, 700)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	368
+						justify    	0
+						label      	"查询X-App-Id 下用户")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB77002CF"
+					    width      	474
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object DecisionView "用户是否校验成功" @17
+					    Parent_View 	@1
+					    location   	(1684, 1916)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @18
+						Parent_View 	@17
+						location   	(1321, 1825)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor     	1
+						nlines     	1
+						max_width  	411
+						justify    	1
+						label      	"用户是否校验成功"
+						pctDist    	-3.715328
+						height     	147
+						orientation 	1)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB95D00E1"
+					    autoResize 	TRUE)
+					(object TransView "" @19
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64BFB96E01BF"
+					    client     	@13
+					    supplier   	@17
+					    vertices   	(list Points
+						(1684, 1662)
+						(1684, 1879))
+					    line_style 	3
+					    origin_attachment 	(1684, 1662)
+					    terminal_attachment 	(1684, 1879)
+					    x_offset   	FALSE)
+					(object ActivityStateView "返回登录信息" @20
+					    Parent_View 	@1
+					    location   	(1687, 2297)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@20
+						location   	(1687, 2300)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"返回登录信息")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB9740181"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object TransView "" @21
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @22
+						Parent_View 	@21
+						location   	(1729, 2098)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"是"
+						pctDist    	0.500000
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64BFB9880318"
+					    client     	@17
+					    supplier   	@20
+					    vertices   	(list Points
+						(1684, 1953)
+						(1684, 2243))
+					    line_style 	3
+					    origin_attachment 	(1684, 1953)
+					    terminal_attachment 	(1684, 2243)
+					    x_offset   	FALSE)
+					(object ActivityStateView "再次查询X-App-Id下用户" @23
+					    Parent_View 	@1
+					    location   	(2755, 1915)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@23
+						location   	(2755, 1918)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"再次查询X-App-Id下用户")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64C06E62039D"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object TransView "" @24
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @25
+						Parent_View 	@24
+						location   	(2171, 1872)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"否"
+						pctDist    	0.500000
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C20F9800B2"
+					    client     	@17
+					    supplier   	@23
+					    vertices   	(list Points
+						(1759, 1916)
+						(2583, 1916))
+					    line_style 	3
+					    origin_attachment 	(1759, 1916)
+					    terminal_attachment 	(2583, 1916)
+					    x_offset   	FALSE)
+					(object DecisionView "再次查询X-App-Id下用户是否存在" @26
+					    Parent_View 	@1
+					    location   	(2753, 2266)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @27
+						Parent_View 	@26
+						location   	(2081, 2148)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor     	1
+						nlines     	1
+						max_width  	716
+						justify    	1
+						label      	"再次查询X-App-Id下用户是否存在"
+						pctDist    	-7.166429
+						height     	261
+						orientation 	1)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64C06F2E007B"
+					    autoResize 	TRUE)
+					(object TransView "" @28
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C06F3E024D"
+					    client     	@23
+					    supplier   	@26
+					    vertices   	(list Points
+						(2753, 1968)
+						(2753, 2229))
+					    line_style 	3
+					    origin_attachment 	(2753, 1968)
+					    terminal_attachment 	(2753, 2229)
+					    x_offset   	FALSE)
+					(object DecisionView "用户是否是超级管理员" @29
+					    Parent_View 	@1
+					    location   	(2753, 2517)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @30
+						Parent_View 	@29
+						location   	(2277, 2426)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor     	1
+						nlines     	1
+						max_width  	525
+						justify    	1
+						label      	"用户是否是超级管理员"
+						pctDist    	-4.927223
+						height     	199
+						orientation 	1)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64C0E7600313"
+					    autoResize 	TRUE)
+					(object TransView "" @31
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @32
+						Parent_View 	@31
+						location   	(2798, 2391)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"是"
+						pctDist    	0.500000
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0E7B60229"
+					    client     	@26
+					    supplier   	@29
+					    vertices   	(list Points
+						(2753, 2303)
+						(2753, 2480))
+					    line_style 	0
+					    x_offset   	FALSE)
+					(object ActivityStateView "校验用户" @33
+					    Parent_View 	@1
+					    location   	(2759, 2793)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@33
+						location   	(2759, 2796)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"校验用户")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB674000D"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object TransView "" @34
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @35
+						Parent_View 	@34
+						location   	(2798, 2647)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"是"
+						pctDist    	0.500000
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EA680089"
+					    client     	@29
+					    supplier   	@33
+					    vertices   	(list Points
+						(2753, 2554)
+						(2753, 2739))
+					    line_style 	3
+					    origin_attachment 	(2753, 2554)
+					    terminal_attachment 	(2753, 2739)
+					    x_offset   	FALSE)
+					(object DecisionView "用户是否校验成功" @36
+					    Parent_View 	@1
+					    location   	(2759, 3089)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @37
+						Parent_View 	@36
+						location   	(2362, 3010)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor     	1
+						nlines     	1
+						max_width  	412
+						justify    	1
+						label      	"用户是否校验成功"
+						pctDist    	-4.016443
+						height     	174
+						orientation 	1)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB95D00E1"
+					    autoResize 	TRUE)
+					(object TransView "" @38
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EA8903B2"
+					    client     	@33
+					    supplier   	@36
+					    vertices   	(list Points
+						(2759, 2846)
+						(2759, 3052))
+					    line_style 	0
+					    x_offset   	FALSE)
+					(object ActivityStateView "超级管理员变管理员，返回登录信息" @39
+					    Parent_View 	@1
+					    location   	(2764, 3493)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@39
+						location   	(2764, 3496)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	430
+						justify    	0
+						label      	"超级管理员变管理员，返回登录信息")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64C0EA8F022F"
+					    width      	536
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object TransView "" @40
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @41
+						Parent_View 	@40
+						location   	(2804, 3283)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"是"
+						pctDist    	0.500000
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EB2F0051"
+					    client     	@36
+					    supplier   	@39
+					    vertices   	(list Points
+						(2759, 3126)
+						(2759, 3440))
+					    line_style 	3
+					    origin_attachment 	(2759, 3126)
+					    terminal_attachment 	(2759, 3440)
+					    x_offset   	FALSE)
+					(object ActivityStateView "返回登录失败" @42
+					    Parent_View 	@1
+					    location   	(3478, 3079)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@42
+						location   	(3478, 3082)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"返回登录失败")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB98E035E"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object TransView "" @43
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @44
+						Parent_View 	@43
+						location   	(3075, 2202)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"否"
+						pctDist    	0.176807
+						height     	64
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EDAA0169"
+					    client     	@26
+					    supplier   	@42
+					    vertices   	(list Points
+						(2828, 2266)
+						(3465, 2266)
+						(3465, 3026))
+					    line_style 	3
+					    origin_attachment 	(2828, 2266)
+					    terminal_attachment 	(3465, 3026)
+					    x_offset   	FALSE)
+					(object TransView "" @45
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @46
+						Parent_View 	@45
+						location   	(3087, 2467)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"否"
+						pctDist    	0.225806
+						height     	50
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C213460060"
+					    client     	@29
+					    supplier   	@42
+					    vertices   	(list Points
+						(2828, 2517)
+						(3466, 2517)
+						(3466, 3026))
+					    line_style 	3
+					    origin_attachment 	(2828, 2517)
+					    terminal_attachment 	(3466, 3026)
+					    x_offset   	FALSE)
+					(object TransView "" @47
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @48
+						Parent_View 	@47
+						location   	(3084, 3036)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"否"
+						pctDist    	0.529661
+						height     	53
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EC6C0278"
+					    client     	@36
+					    supplier   	@42
+					    vertices   	(list Points
+						(2834, 3089)
+						(3306, 3089))
+					    line_style 	3
+					    origin_attachment 	(2834, 3089)
+					    terminal_attachment 	(3306, 3089)
+					    x_offset   	FALSE)
+					(object ActivityStateView "校验用户" @49
+					    Parent_View 	@1
+					    location   	(3991, 1400)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@49
+						location   	(3991, 1403)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"校验用户")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB674000D"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object DecisionView "用户是否校验成功" @50
+					    Parent_View 	@1
+					    location   	(3998, 1797)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @51
+						Parent_View 	@50
+						location   	(3592, 1706)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor     	1
+						nlines     	1
+						max_width  	444
+						justify    	1
+						label      	"用户是否校验成功"
+						pctDist    	-4.176437
+						height     	167
+						orientation 	1)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB95D00E1"
+					    autoResize 	TRUE)
+					(object TransView "" @52
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EEFE004F"
+					    client     	@49
+					    supplier   	@50
+					    vertices   	(list Points
+						(3998, 1453)
+						(3998, 1760))
+					    line_style 	3
+					    origin_attachment 	(3998, 1453)
+					    terminal_attachment 	(3998, 1760)
+					    x_offset   	FALSE)
+					(object ActivityStateView "返回登录信息" @53
+					    Parent_View 	@1
+					    location   	(4000, 2229)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@53
+						location   	(4000, 2232)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"返回登录信息")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB9740181"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object TransView "" @54
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @55
+						Parent_View 	@54
+						location   	(4043, 2005)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"是"
+						pctDist    	0.500000
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EF3B0097"
+					    client     	@50
+					    supplier   	@53
+					    vertices   	(list Points
+						(3998, 1834)
+						(3998, 2176))
+					    line_style 	3
+					    origin_attachment 	(3998, 1834)
+					    terminal_attachment 	(3998, 2176)
+					    x_offset   	FALSE)
+					(object ActivityStateView "返回登录失败" @56
+					    Parent_View 	@1
+					    location   	(4712, 1787)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object ItemLabel
+						Parent_View 	@56
+						location   	(4712, 1790)
+						fill_color 	13434879
+						anchor_loc 	1
+						nlines     	2
+						max_width  	269
+						justify    	0
+						label      	"返回登录失败")
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64BFB98E035E"
+					    height     	106
+					    annotation 	1
+					    autoResize 	TRUE)
+					(object TransView "" @57
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @58
+						Parent_View 	@57
+						location   	(4352, 1742)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"否"
+						pctDist    	0.599907
+						height     	56
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EF440297"
+					    client     	@50
+					    supplier   	@56
+					    vertices   	(list Points
+						(4073, 1797)
+						(4540, 1797))
+					    line_style 	3
+					    origin_attachment 	(4073, 1797)
+					    terminal_attachment 	(4540, 1797)
+					    x_offset   	FALSE)
+					(object StateView "EndState" "结束" @59
+					    Parent_View 	@1
+					    location   	(2770, 4026)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @60
+						Parent_View 	@59
+						location   	(2824, 3984)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						nlines     	2
+						max_width  	600
+						justify    	1
+						label      	"结束"
+						pctDist    	1.000000
+						height     	0
+						orientation 	0)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    quidu      	"64BFB97F0094"
+					    autoResize 	TRUE)
+					(object TransView "" @61
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EC4400C0"
+					    client     	@39
+					    supplier   	@59
+					    vertices   	(list Points
+						(2770, 3546)
+						(2770, 3984))
+					    line_style 	3
+					    origin_attachment 	(2770, 3546)
+					    terminal_attachment 	(2770, 3984)
+					    x_offset   	FALSE)
+					(object TransView "" @62
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64BFB9850038"
+					    client     	@20
+					    supplier   	@59
+					    vertices   	(list Points
+						(1683, 2350)
+						(1683, 4021)
+						(2728, 4021))
+					    line_style 	3
+					    origin_attachment 	(1683, 2350)
+					    terminal_attachment 	(2728, 4021)
+					    x_offset   	FALSE)
+					(object TransView "" @63
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EF6D03B1"
+					    client     	@53
+					    supplier   	@59
+					    vertices   	(list Points
+						(4003, 2282)
+						(4003, 4025)
+						(2812, 4025))
+					    line_style 	3
+					    origin_attachment 	(4003, 2282)
+					    terminal_attachment 	(2812, 4025)
+					    x_offset   	FALSE)
+					(object TransView "" @64
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64BFB9A70134"
+					    client     	@42
+					    supplier   	@59
+					    vertices   	(list Points
+						(3467, 3132)
+						(3467, 4025)
+						(2812, 4025))
+					    line_style 	3
+					    origin_attachment 	(3467, 3132)
+					    terminal_attachment 	(2812, 4025)
+					    x_offset   	FALSE)
+					(object DecisionView "X-App-Id用户是否存在" @65
+					    Parent_View 	@1
+					    location   	(3994, 1040)
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @66
+						Parent_View 	@65
+						location   	(3472, 1022)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	TRUE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor     	1
+						nlines     	1
+						max_width  	462
+						justify    	1
+						label      	"X-App-Id用户是否存在"
+						pctDist    	-5.034172
+						height     	283
+						orientation 	1)
+					    icon_style 	"Icon"
+					    line_color 	3342489
+					    fill_color 	13434879
+					    quidu      	"64C2567D008F"
+					    autoResize 	TRUE)
+					(object TransView "" @67
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C256AC03B4"
+					    client     	@16
+					    supplier   	@65
+					    vertices   	(list Points
+						(3994, 750)
+						(3994, 1003))
+					    line_style 	3
+					    origin_attachment 	(3994, 750)
+					    terminal_attachment 	(3994, 1003)
+					    x_offset   	FALSE)
+					(object TransView "" @68
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @69
+						Parent_View 	@68
+						location   	(4039, 1211)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	450
+						justify    	0
+						label      	"是"
+						pctDist    	0.500000
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C256B9010D"
+					    client     	@65
+					    supplier   	@49
+					    vertices   	(list Points
+						(3994, 1077)
+						(3994, 1346))
+					    line_style 	3
+					    origin_attachment 	(3994, 1077)
+					    terminal_attachment 	(3994, 1346)
+					    x_offset   	FALSE)
+					(object TransView "" @70
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @71
+						Parent_View 	@70
+						location   	(4322, 995)
+						font       	(object Font
+						    size       	10
+						    face       	"Arial"
+						    bold       	FALSE
+						    italics    	FALSE
+						    underline  	FALSE
+						    strike     	FALSE
+						    color      	0
+						    default_color 	TRUE)
+						anchor_loc 	1
+						nlines     	1
+						max_width  	60
+						justify    	0
+						label      	"否"
+						pctDist    	0.189088
+						height     	45
+						orientation 	0)
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C256BD018C"
+					    client     	@65
+					    supplier   	@56
+					    vertices   	(list Points
+						(4069, 1040)
+						(4713, 1040)
+						(4713, 1734))
+					    line_style 	3
+					    origin_attachment 	(4069, 1040)
+					    terminal_attachment 	(4713, 1734)
+					    x_offset   	FALSE)
+					(object TransView "" @72
+					    stereotype 	TRUE
+					    line_color 	3342489
+					    quidu      	"64C0EC7E00A1"
+					    client     	@56
+					    supplier   	@59
+					    vertices   	(list Points
+						(4706, 1840)
+						(4706, 2824)
+						(4003, 2824)
+						(4003, 4024)
+						(2812, 4024))
+					    line_style 	3
+					    origin_attachment 	(4706, 1840)
+					    terminal_attachment 	(2812, 4024)
+					    x_offset   	FALSE)
+					(object TransView "" @73
+					    font       	(object Font
+						size       	10
+						face       	"Arial"
+						bold       	FALSE
+						italics    	FALSE
+						underline  	FALSE
+						strike     	FALSE
+						color      	0
+						default_color 	TRUE)
+					    label      	(object SegLabel @74
+						Parent_View 	@73
 						location   	(1732, 841)
 						font       	(object Font
 						    size       	10
@@ -901,9 +2174,7 @@
 					    origin_attachment 	(1687, 738)
 					    terminal_attachment 	(1687, 944)
 					    x_offset   	FALSE)
-					(object DecisionView "appId下用户是否存在" @12
-					    Parent_View 	@1
-					    location   	(1688, 1259)
+					(object TransView "" @75
 					    font       	(object Font
 						size       	10
 						face       	"Arial"
@@ -913,195 +2184,9 @@
 						strike     	FALSE
 						color      	0
 						default_color 	TRUE)
-					    label      	(object SegLabel @13
-						Parent_View 	@12
-						location   	(1197, 1228)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor     	1
-						nlines     	1
-						max_width  	451
-						justify    	1
-						label      	"appId下用户是否存在"
-						pctDist    	-4.770517
-						height     	258
-						orientation 	1)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB65E03A2"
-					    autoResize 	TRUE)
-					(object TransView "" @14
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64BFB73E029E"
-					    client     	@9
-					    supplier   	@12
-					    vertices   	(list Points
-						(1688, 1050)
-						(1688, 1222))
-					    line_style 	3
-					    origin_attachment 	(1688, 1050)
-					    terminal_attachment 	(1688, 1222)
-					    x_offset   	FALSE)
-					(object ActivityStateView "校验用户" @15
-					    Parent_View 	@1
-					    location   	(1687, 1609)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@15
-						location   	(1687, 1612)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"校验用户")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB674000D"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @16
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @17
-						Parent_View 	@16
-						location   	(1733, 1426)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"是"
-						pctDist    	0.500000
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64BFB7450241"
-					    client     	@12
-					    supplier   	@15
-					    vertices   	(list Points
-						(1688, 1296)
-						(1688, 1556))
-					    line_style 	3
-					    origin_attachment 	(1688, 1296)
-					    terminal_attachment 	(1688, 1556)
-					    x_offset   	FALSE)
-					(object NoteView @18
-					    Parent_View 	@1
-					    location   	(2422, 194)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@18
-						location   	(2037, 57)
-						fill_color 	13434879
-						nlines     	5
-						max_width  	734
-						justify    	1
-						label      	
-|提交的信息如下：
-|X-App-Id: 请求头上的客户端应用id 
-|appId：选择登录的应用id
-|username：用户名
-|password：密码
-						)
-					    line_color 	3342489
-					    fill_color 	13434879
-					    width      	794
-					    height     	287)
-					(object AttachView "" @19
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    client     	@4
-					    supplier   	@18
-					    vertices   	(list Points
-						(1838, 344)
-						(2024, 295))
-					    line_style 	0)
-					(object ActivityStateView "查询X-App-Id 下用户" @20
-					    Parent_View 	@1
-					    location   	(3987, 697)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@20
-						location   	(3987, 700)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	368
-						justify    	0
-						label      	"查询X-App-Id 下用户")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB77002CF"
-					    width      	474
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @21
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @22
-						Parent_View 	@21
-						location   	(2777, 651)
+					    label      	(object SegLabel @76
+						Parent_View 	@75
+						location   	(2777, 650)
 						font       	(object Font
 						    size       	10
 						    face       	"Arial"
@@ -1123,65 +2208,15 @@
 					    line_color 	3342489
 					    quidu      	"64BFB7900322"
 					    client     	@6
-					    supplier   	@20
+					    supplier   	@16
 					    vertices   	(list Points
 						(1777, 694)
-						(3778, 696))
-					    line_style 	0
-					    x_offset   	FALSE)
-					(object DecisionView "用户是否校验成功" @23
-					    Parent_View 	@1
-					    location   	(1684, 1916)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @24
-						Parent_View 	@23
-						location   	(1321, 1825)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor     	1
-						nlines     	1
-						max_width  	411
-						justify    	1
-						label      	"用户是否校验成功"
-						pctDist    	-3.715328
-						height     	147
-						orientation 	1)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB95D00E1"
-					    autoResize 	TRUE)
-					(object TransView "" @25
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64BFB96E01BF"
-					    client     	@15
-					    supplier   	@23
-					    vertices   	(list Points
-						(1684, 1662)
-						(1684, 1879))
+						(3778, 694))
 					    line_style 	3
-					    origin_attachment 	(1684, 1662)
-					    terminal_attachment 	(1684, 1879)
+					    origin_attachment 	(1777, 694)
+					    terminal_attachment 	(3778, 694)
 					    x_offset   	FALSE)
-					(object ActivityStateView "返回登录信息" @26
-					    Parent_View 	@1
-					    location   	(1687, 2297)
+					(object TransView "" @77
 					    font       	(object Font
 						size       	10
 						face       	"Arial"
@@ -1191,35 +2226,9 @@
 						strike     	FALSE
 						color      	0
 						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@26
-						location   	(1687, 2300)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"返回登录信息")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB9740181"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @27
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @28
-						Parent_View 	@27
-						location   	(1729, 2098)
+					    label      	(object SegLabel @78
+						Parent_View 	@77
+						location   	(1733, 1426)
 						font       	(object Font
 						    size       	10
 						    face       	"Arial"
@@ -1239,19 +2248,17 @@
 						orientation 	0)
 					    stereotype 	TRUE
 					    line_color 	3342489
-					    quidu      	"64BFB9880318"
-					    client     	@23
-					    supplier   	@26
+					    quidu      	"64BFB7450241"
+					    client     	@10
+					    supplier   	@13
 					    vertices   	(list Points
-						(1684, 1953)
-						(1684, 2243))
+						(1688, 1296)
+						(1688, 1556))
 					    line_style 	3
-					    origin_attachment 	(1684, 1953)
-					    terminal_attachment 	(1684, 2243)
+					    origin_attachment 	(1688, 1296)
+					    terminal_attachment 	(1688, 1556)
 					    x_offset   	FALSE)
-					(object ActivityStateView "再次查询X-App-Id下用户" @29
-					    Parent_View 	@1
-					    location   	(2755, 1915)
+					(object TransView "" @79
 					    font       	(object Font
 						size       	10
 						face       	"Arial"
@@ -1261,35 +2268,9 @@
 						strike     	FALSE
 						color      	0
 						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@29
-						location   	(2755, 1918)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"再次查询X-App-Id下用户")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64C06E62039D"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @30
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @31
-						Parent_View 	@30
-						location   	(2175, 1203)
+					    label      	(object SegLabel @80
+						Parent_View 	@79
+						location   	(2659, 1204)
 						font       	(object Font
 						    size       	10
 						    face       	"Arial"
@@ -1310,988 +2291,15 @@
 					    stereotype 	TRUE
 					    line_color 	3342489
 					    quidu      	"64BFB91201E2"
-					    client     	@12
-					    supplier   	@29
+					    client     	@10
+					    supplier   	@42
 					    vertices   	(list Points
 						(1763, 1259)
-						(2754, 1259)
-						(2754, 1862))
-					    line_style 	3
-					    origin_attachment 	(1763, 1259)
-					    terminal_attachment 	(2754, 1862)
-					    x_offset   	FALSE)
-					(object TransView "" @32
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @33
-						Parent_View 	@32
-						location   	(2171, 1872)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"否"
-						pctDist    	0.500000
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C20F9800B2"
-					    client     	@23
-					    supplier   	@29
-					    vertices   	(list Points
-						(1759, 1916)
-						(2583, 1916))
-					    line_style 	3
-					    origin_attachment 	(1759, 1916)
-					    terminal_attachment 	(2583, 1916)
-					    x_offset   	FALSE)
-					(object DecisionView "再次查询X-App-Id下用户是否存在" @34
-					    Parent_View 	@1
-					    location   	(2753, 2266)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @35
-						Parent_View 	@34
-						location   	(2081, 2148)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor     	1
-						nlines     	1
-						max_width  	716
-						justify    	1
-						label      	"再次查询X-App-Id下用户是否存在"
-						pctDist    	-7.166429
-						height     	261
-						orientation 	1)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64C06F2E007B"
-					    autoResize 	TRUE)
-					(object TransView "" @36
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C06F3E024D"
-					    client     	@29
-					    supplier   	@34
-					    vertices   	(list Points
-						(2753, 1968)
-						(2753, 2229))
-					    line_style 	3
-					    origin_attachment 	(2753, 1968)
-					    terminal_attachment 	(2753, 2229)
-					    x_offset   	FALSE)
-					(object DecisionView "用户是否是超级管理员" @37
-					    Parent_View 	@1
-					    location   	(2753, 2517)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @38
-						Parent_View 	@37
-						location   	(2277, 2426)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor     	1
-						nlines     	1
-						max_width  	525
-						justify    	1
-						label      	"用户是否是超级管理员"
-						pctDist    	-4.927223
-						height     	199
-						orientation 	1)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64C0E7600313"
-					    autoResize 	TRUE)
-					(object TransView "" @39
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @40
-						Parent_View 	@39
-						location   	(2798, 2391)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"是"
-						pctDist    	0.500000
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0E7B60229"
-					    client     	@34
-					    supplier   	@37
-					    vertices   	(list Points
-						(2753, 2303)
-						(2753, 2480))
-					    line_style 	0
-					    x_offset   	FALSE)
-					(object ActivityStateView "校验用户" @41
-					    Parent_View 	@1
-					    location   	(2759, 2793)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@41
-						location   	(2759, 2796)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"校验用户")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB674000D"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @42
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @43
-						Parent_View 	@42
-						location   	(2798, 2647)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"是"
-						pctDist    	0.500000
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EA680089"
-					    client     	@37
-					    supplier   	@41
-					    vertices   	(list Points
-						(2753, 2554)
-						(2753, 2739))
-					    line_style 	3
-					    origin_attachment 	(2753, 2554)
-					    terminal_attachment 	(2753, 2739)
-					    x_offset   	FALSE)
-					(object DecisionView "用户是否校验成功" @44
-					    Parent_View 	@1
-					    location   	(2759, 3089)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @45
-						Parent_View 	@44
-						location   	(2362, 3010)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor     	1
-						nlines     	1
-						max_width  	412
-						justify    	1
-						label      	"用户是否校验成功"
-						pctDist    	-4.016443
-						height     	174
-						orientation 	1)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB95D00E1"
-					    autoResize 	TRUE)
-					(object TransView "" @46
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EA8903B2"
-					    client     	@41
-					    supplier   	@44
-					    vertices   	(list Points
-						(2759, 2846)
-						(2759, 3052))
-					    line_style 	0
-					    x_offset   	FALSE)
-					(object ActivityStateView "超级管理员变管理员，返回登录信息" @47
-					    Parent_View 	@1
-					    location   	(2764, 3493)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@47
-						location   	(2764, 3496)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	430
-						justify    	0
-						label      	"超级管理员变管理员，返回登录信息")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64C0EA8F022F"
-					    width      	536
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @48
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @49
-						Parent_View 	@48
-						location   	(2804, 3283)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"是"
-						pctDist    	0.500000
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EB2F0051"
-					    client     	@44
-					    supplier   	@47
-					    vertices   	(list Points
-						(2759, 3126)
-						(2759, 3440))
-					    line_style 	3
-					    origin_attachment 	(2759, 3126)
-					    terminal_attachment 	(2759, 3440)
-					    x_offset   	FALSE)
-					(object ActivityStateView "返回登录失败" @50
-					    Parent_View 	@1
-					    location   	(3478, 3079)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@50
-						location   	(3478, 3082)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"返回登录失败")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB98E035E"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @51
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @52
-						Parent_View 	@51
-						location   	(3075, 2202)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"否"
-						pctDist    	0.176807
-						height     	64
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EDAA0169"
-					    client     	@34
-					    supplier   	@50
-					    vertices   	(list Points
-						(2828, 2266)
-						(3465, 2266)
-						(3465, 3026))
-					    line_style 	3
-					    origin_attachment 	(2828, 2266)
-					    terminal_attachment 	(3465, 3026)
-					    x_offset   	FALSE)
-					(object TransView "" @53
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @54
-						Parent_View 	@53
-						location   	(3087, 2467)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"否"
-						pctDist    	0.225806
-						height     	50
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C213460060"
-					    client     	@37
-					    supplier   	@50
-					    vertices   	(list Points
-						(2828, 2517)
-						(3466, 2517)
+						(3466, 1259)
 						(3466, 3026))
 					    line_style 	3
-					    origin_attachment 	(2828, 2517)
+					    origin_attachment 	(1763, 1259)
 					    terminal_attachment 	(3466, 3026)
-					    x_offset   	FALSE)
-					(object TransView "" @55
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @56
-						Parent_View 	@55
-						location   	(3084, 3036)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"否"
-						pctDist    	0.529661
-						height     	53
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EC6C0278"
-					    client     	@44
-					    supplier   	@50
-					    vertices   	(list Points
-						(2834, 3089)
-						(3306, 3089))
-					    line_style 	3
-					    origin_attachment 	(2834, 3089)
-					    terminal_attachment 	(3306, 3089)
-					    x_offset   	FALSE)
-					(object ActivityStateView "校验用户" @57
-					    Parent_View 	@1
-					    location   	(3991, 1400)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@57
-						location   	(3991, 1403)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"校验用户")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB674000D"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object DecisionView "用户是否校验成功" @58
-					    Parent_View 	@1
-					    location   	(3998, 1797)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @59
-						Parent_View 	@58
-						location   	(3592, 1706)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor     	1
-						nlines     	1
-						max_width  	444
-						justify    	1
-						label      	"用户是否校验成功"
-						pctDist    	-4.176437
-						height     	167
-						orientation 	1)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB95D00E1"
-					    autoResize 	TRUE)
-					(object TransView "" @60
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EEFE004F"
-					    client     	@57
-					    supplier   	@58
-					    vertices   	(list Points
-						(3998, 1453)
-						(3998, 1760))
-					    line_style 	3
-					    origin_attachment 	(3998, 1453)
-					    terminal_attachment 	(3998, 1760)
-					    x_offset   	FALSE)
-					(object ActivityStateView "返回登录信息" @61
-					    Parent_View 	@1
-					    location   	(4000, 2229)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@61
-						location   	(4000, 2232)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"返回登录信息")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB9740181"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @62
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @63
-						Parent_View 	@62
-						location   	(4043, 2005)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"是"
-						pctDist    	0.500000
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EF3B0097"
-					    client     	@58
-					    supplier   	@61
-					    vertices   	(list Points
-						(3998, 1834)
-						(3998, 2176))
-					    line_style 	3
-					    origin_attachment 	(3998, 1834)
-					    terminal_attachment 	(3998, 2176)
-					    x_offset   	FALSE)
-					(object ActivityStateView "返回登录失败" @64
-					    Parent_View 	@1
-					    location   	(4712, 1787)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object ItemLabel
-						Parent_View 	@64
-						location   	(4712, 1790)
-						fill_color 	13434879
-						anchor_loc 	1
-						nlines     	2
-						max_width  	269
-						justify    	0
-						label      	"返回登录失败")
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64BFB98E035E"
-					    height     	106
-					    annotation 	1
-					    autoResize 	TRUE)
-					(object TransView "" @65
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @66
-						Parent_View 	@65
-						location   	(4352, 1742)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"否"
-						pctDist    	0.599907
-						height     	56
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EF440297"
-					    client     	@58
-					    supplier   	@64
-					    vertices   	(list Points
-						(4073, 1797)
-						(4540, 1797))
-					    line_style 	3
-					    origin_attachment 	(4073, 1797)
-					    terminal_attachment 	(4540, 1797)
-					    x_offset   	FALSE)
-					(object StateView "EndState" "结束" @67
-					    Parent_View 	@1
-					    location   	(2770, 4026)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @68
-						Parent_View 	@67
-						location   	(2824, 3984)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						nlines     	2
-						max_width  	600
-						justify    	1
-						label      	"结束"
-						pctDist    	1.000000
-						height     	0
-						orientation 	0)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    quidu      	"64BFB97F0094"
-					    autoResize 	TRUE)
-					(object TransView "" @69
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EC4400C0"
-					    client     	@47
-					    supplier   	@67
-					    vertices   	(list Points
-						(2770, 3546)
-						(2770, 3984))
-					    line_style 	3
-					    origin_attachment 	(2770, 3546)
-					    terminal_attachment 	(2770, 3984)
-					    x_offset   	FALSE)
-					(object TransView "" @70
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64BFB9850038"
-					    client     	@26
-					    supplier   	@67
-					    vertices   	(list Points
-						(1683, 2350)
-						(1683, 4022)
-						(2728, 4022))
-					    line_style 	3
-					    origin_attachment 	(1683, 2350)
-					    terminal_attachment 	(2728, 4022)
-					    x_offset   	FALSE)
-					(object TransView "" @71
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EF6D03B1"
-					    client     	@61
-					    supplier   	@67
-					    vertices   	(list Points
-						(4003, 2282)
-						(4003, 4025)
-						(2812, 4025))
-					    line_style 	3
-					    origin_attachment 	(4003, 2282)
-					    terminal_attachment 	(2812, 4025)
-					    x_offset   	FALSE)
-					(object TransView "" @72
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64BFB9A70134"
-					    client     	@50
-					    supplier   	@67
-					    vertices   	(list Points
-						(3467, 3132)
-						(3467, 4025)
-						(2812, 4025))
-					    line_style 	3
-					    origin_attachment 	(3467, 3132)
-					    terminal_attachment 	(2812, 4025)
-					    x_offset   	FALSE)
-					(object DecisionView "X-App-Id用户是否存在" @73
-					    Parent_View 	@1
-					    location   	(3994, 1040)
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @74
-						Parent_View 	@73
-						location   	(3472, 1022)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	TRUE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor     	1
-						nlines     	1
-						max_width  	462
-						justify    	1
-						label      	"X-App-Id用户是否存在"
-						pctDist    	-5.034172
-						height     	283
-						orientation 	1)
-					    icon_style 	"Icon"
-					    line_color 	3342489
-					    fill_color 	13434879
-					    quidu      	"64C2567D008F"
-					    autoResize 	TRUE)
-					(object TransView "" @75
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C256AC03B4"
-					    client     	@20
-					    supplier   	@73
-					    vertices   	(list Points
-						(3994, 750)
-						(3994, 1003))
-					    line_style 	3
-					    origin_attachment 	(3994, 750)
-					    terminal_attachment 	(3994, 1003)
-					    x_offset   	FALSE)
-					(object TransView "" @76
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @77
-						Parent_View 	@76
-						location   	(4039, 1211)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	450
-						justify    	0
-						label      	"是"
-						pctDist    	0.500000
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C256B9010D"
-					    client     	@73
-					    supplier   	@57
-					    vertices   	(list Points
-						(3994, 1077)
-						(3994, 1346))
-					    line_style 	3
-					    origin_attachment 	(3994, 1077)
-					    terminal_attachment 	(3994, 1346)
-					    x_offset   	FALSE)
-					(object TransView "" @78
-					    font       	(object Font
-						size       	10
-						face       	"Arial"
-						bold       	FALSE
-						italics    	FALSE
-						underline  	FALSE
-						strike     	FALSE
-						color      	0
-						default_color 	TRUE)
-					    label      	(object SegLabel @79
-						Parent_View 	@78
-						location   	(4322, 995)
-						font       	(object Font
-						    size       	10
-						    face       	"Arial"
-						    bold       	FALSE
-						    italics    	FALSE
-						    underline  	FALSE
-						    strike     	FALSE
-						    color      	0
-						    default_color 	TRUE)
-						anchor_loc 	1
-						nlines     	1
-						max_width  	60
-						justify    	0
-						label      	"否"
-						pctDist    	0.189088
-						height     	45
-						orientation 	0)
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C256BD018C"
-					    client     	@73
-					    supplier   	@64
-					    vertices   	(list Points
-						(4069, 1040)
-						(4713, 1040)
-						(4713, 1734))
-					    line_style 	3
-					    origin_attachment 	(4069, 1040)
-					    terminal_attachment 	(4713, 1734)
-					    x_offset   	FALSE)
-					(object TransView "" @80
-					    stereotype 	TRUE
-					    line_color 	3342489
-					    quidu      	"64C0EC7E00A1"
-					    client     	@64
-					    supplier   	@67
-					    vertices   	(list Points
-						(4706, 1840)
-						(4706, 2824)
-						(4003, 2824)
-						(4003, 4024)
-						(2812, 4024))
-					    line_style 	3
-					    origin_attachment 	(4706, 1840)
-					    terminal_attachment 	(2812, 4024)
 					    x_offset   	FALSE)))))
 			logical_models 	(list unit_reference_list
 			    (object Mechanism @81
@@ -3174,11 +3182,11 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object ClassView "Class" "Use Case View::超级管理员（sadmin）" @124
+			    (object ClassView "Class" "Use Case View::超级管理员（admin）" @124
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(448, 400)
+				location   	(473, 827)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3190,12 +3198,12 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@124
-				    location   	(448, 560)
+				    location   	(473, 987)
 				    anchor_loc 	1
 				    nlines     	2
-				    max_width  	325
+				    max_width  	461
 				    justify    	0
-				    label      	"超级管理员（sadmin）")
+				    label      	"超级管理员（admin）")
 				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
@@ -3203,7 +3211,7 @@
 				annotation 	8
 				autoResize 	TRUE)
 			    (object UseCaseView "Use Case View::登录::登录" @125
-				location   	(1762, 768)
+				location   	(1787, 1195)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3215,7 +3223,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@125
-				    location   	(1762, 906)
+				    location   	(1787, 1333)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
@@ -3226,11 +3234,11 @@
 				fill_color 	13434879
 				quidu      	"64BF28720214"
 				height     	118)
-			    (object ClassView "Class" "Use Case View::管理员（admin）" @126
+			    (object ClassView "Class" "Use Case View::应用管理员" @126
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(464, 878)
+				location   	(489, 1305)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3242,12 +3250,12 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@126
-				    location   	(464, 1038)
+				    location   	(489, 1465)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	325
 				    justify    	0
-				    label      	"管理员（admin）")
+				    label      	"应用管理员")
 				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
@@ -3258,7 +3266,7 @@
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(475, 1409)
+				location   	(500, 1836)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3270,7 +3278,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@127
-				    location   	(475, 1569)
+				    location   	(500, 1996)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	325
@@ -3289,8 +3297,8 @@
 				client     	@124
 				supplier   	@125
 				vertices   	(list Points
-				    (505, 413)
-				    (1650, 735))
+				    (530, 840)
+				    (1675, 1162))
 				line_style 	0)
 			    (object DependencyView "" @129
 				stereotype 	TRUE
@@ -3299,8 +3307,8 @@
 				client     	@126
 				supplier   	@125
 				vertices   	(list Points
-				    (521, 870)
-				    (1651, 773))
+				    (546, 1297)
+				    (1676, 1200))
 				line_style 	0)
 			    (object DependencyView "" @130
 				stereotype 	TRUE
@@ -3309,8 +3317,47 @@
 				client     	@127
 				supplier   	@125
 				vertices   	(list Points
-				    (532, 1376)
-				    (1652, 818))
+				    (557, 1803)
+				    (1677, 1245))
+				line_style 	0)
+			    (object NoteView @131
+				location   	(2187, 665)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@131
+				    location   	(1640, 471)
+				    fill_color 	13434879
+				    nlines     	7
+				    max_width  	1059
+				    justify    	1
+				    label      	
+|用户使用浏览器请求登录页面
+|1. 选择需要登录的应用(应用配置了重定向首页)，可选
+|2. 输入正确的用户名和密码
+|3. 登录接口成功后，然后跳转到指定页面
+|
+|本登录页可以作为所有登录的统一入口！！！
+				    )
+				line_color 	3342489
+				fill_color 	13434879
+				width      	1119
+				height     	400)
+			    (object AttachView "" @132
+				stereotype 	TRUE
+				line_color 	3342489
+				client     	@125
+				supplier   	@131
+				vertices   	(list Points
+				    (1826, 1137)
+				    (2035, 865))
 				line_style 	0)))))
 	    (object Class_Category "应用管理"
 		quid       	"64BF225903D4"
@@ -3328,11 +3375,7 @@
 		    (object UseCase "删除应用"
 			quid       	"64BF22A90250")
 		    (object UseCase "分页查询应用"
-			quid       	"64BF22B20314"
-			documentation 	
-|显示内容：
-|应用id，应用名称，应用密钥，应用首页，应用备注，激活状态
-			)
+			quid       	"64BF22B20314")
 		    (object UseCase "应用下拉（所有）"
 			quid       	"64BF22D6026D"
 			documentation 	
@@ -3349,60 +3392,11 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object ClassView "Class" "Use Case View::超级管理员（sadmin）" @131
+			    (object ClassView "Class" "Use Case View::超级管理员（admin）" @133
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(395, 700)
-				font       	(object Font
-				    size       	10
-				    face       	"Arial"
-				    bold       	FALSE
-				    italics    	FALSE
-				    underline  	FALSE
-				    strike     	FALSE
-				    color      	0
-				    default_color 	TRUE)
-				label      	(object ItemLabel
-				    Parent_View 	@131
-				    location   	(395, 860)
-				    anchor_loc 	1
-				    nlines     	2
-				    max_width  	325
-				    justify    	0
-				    label      	"超级管理员（sadmin）")
-				icon       	"Actor"
-				icon_style 	"Icon"
-				line_color 	3342489
-				quidu      	"64BF222301D4"
-				annotation 	8
-				autoResize 	TRUE)
-			    (object UseCaseView "Use Case View::应用管理::新增应用" @132
-				location   	(1290, 178)
-				font       	(object Font
-				    size       	10
-				    face       	"Arial"
-				    bold       	FALSE
-				    italics    	FALSE
-				    underline  	FALSE
-				    strike     	FALSE
-				    color      	0
-				    default_color 	TRUE)
-				label      	(object ItemLabel
-				    Parent_View 	@132
-				    location   	(1290, 316)
-				    anchor_loc 	1
-				    nlines     	2
-				    max_width  	630
-				    justify    	0
-				    label      	"新增应用")
-				icon_style 	"Icon"
-				line_color 	3342489
-				fill_color 	13434879
-				quidu      	"64BF229E0245"
-				height     	118)
-			    (object UseCaseView "Use Case View::应用管理::修改应用" @133
-				location   	(1443, 525)
+				location   	(377, 1072)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3414,19 +3408,20 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@133
-				    location   	(1443, 663)
+				    location   	(377, 1232)
 				    anchor_loc 	1
 				    nlines     	2
-				    max_width  	630
+				    max_width  	461
 				    justify    	0
-				    label      	"修改应用")
+				    label      	"超级管理员（admin）")
+				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
-				fill_color 	13434879
-				quidu      	"64BF22A50013"
-				height     	118)
-			    (object UseCaseView "Use Case View::应用管理::删除应用" @134
-				location   	(1553, 850)
+				quidu      	"64BF222301D4"
+				annotation 	8
+				autoResize 	TRUE)
+			    (object UseCaseView "Use Case View::应用管理::新增应用" @134
+				location   	(1272, 550)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3438,19 +3433,19 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@134
-				    location   	(1553, 988)
+				    location   	(1272, 688)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
 				    justify    	0
-				    label      	"删除应用")
+				    label      	"新增应用")
 				icon_style 	"Icon"
 				line_color 	3342489
 				fill_color 	13434879
-				quidu      	"64BF22A90250"
+				quidu      	"64BF229E0245"
 				height     	118)
-			    (object UseCaseView "Use Case View::应用管理::分页查询应用" @135
-				location   	(1409, 1206)
+			    (object UseCaseView "Use Case View::应用管理::修改应用" @135
+				location   	(1425, 897)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3462,19 +3457,19 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@135
-				    location   	(1409, 1344)
+				    location   	(1425, 1035)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
 				    justify    	0
-				    label      	"分页查询应用")
+				    label      	"修改应用")
 				icon_style 	"Icon"
 				line_color 	3342489
 				fill_color 	13434879
-				quidu      	"64BF22B20314"
+				quidu      	"64BF22A50013"
 				height     	118)
-			    (object UseCaseView "Use Case View::应用管理::应用下拉（所有）" @136
-				location   	(1009, 1471)
+			    (object UseCaseView "Use Case View::应用管理::删除应用" @136
+				location   	(1535, 1222)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3486,69 +3481,19 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@136
-				    location   	(1009, 1609)
+				    location   	(1535, 1360)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
 				    justify    	0
-				    label      	"应用下拉（所有）")
+				    label      	"删除应用")
 				icon_style 	"Icon"
 				line_color 	3342489
 				fill_color 	13434879
-				quidu      	"64BF22D6026D"
+				quidu      	"64BF22A90250"
 				height     	118)
-			    (object DependencyView "" @137
-				stereotype 	TRUE
-				line_color 	3342489
-				quidu      	"64BF233D0347"
-				client     	@131
-				supplier   	@132
-				vertices   	(list Points
-				    (452, 663)
-				    (1188, 234))
-				line_style 	0)
-			    (object DependencyView "" @138
-				stereotype 	TRUE
-				line_color 	3342489
-				quidu      	"64BF2340035E"
-				client     	@131
-				supplier   	@133
-				vertices   	(list Points
-				    (452, 688)
-				    (1333, 540))
-				line_style 	0)
-			    (object DependencyView "" @139
-				stereotype 	TRUE
-				line_color 	3342489
-				quidu      	"64BF234301A9"
-				client     	@131
-				supplier   	@134
-				vertices   	(list Points
-				    (452, 704)
-				    (1441, 833))
-				line_style 	0)
-			    (object DependencyView "" @140
-				stereotype 	TRUE
-				line_color 	3342489
-				quidu      	"64BF23460078"
-				client     	@131
-				supplier   	@135
-				vertices   	(list Points
-				    (452, 727)
-				    (1299, 1150))
-				line_style 	0)
-			    (object DependencyView "" @141
-				stereotype 	TRUE
-				line_color 	3342489
-				quidu      	"64BF234A008A"
-				client     	@131
-				supplier   	@136
-				vertices   	(list Points
-				    (509, 844)
-				    (962, 1413))
-				line_style 	0)
-			    (object NoteView @142
-				location   	(456, 147)
+			    (object UseCaseView "Use Case View::应用管理::分页查询应用" @137
+				location   	(1391, 1578)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -3559,8 +3504,106 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@142
-				    location   	(159, 69)
+				    Parent_View 	@137
+				    location   	(1391, 1716)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	630
+				    justify    	0
+				    label      	"分页查询应用")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"64BF22B20314"
+				height     	118)
+			    (object UseCaseView "Use Case View::应用管理::应用下拉（所有）" @138
+				location   	(990, 1843)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@138
+				    location   	(990, 1981)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	630
+				    justify    	0
+				    label      	"应用下拉（所有）")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"64BF22D6026D"
+				height     	118)
+			    (object DependencyView "" @139
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64BF233D0347"
+				client     	@133
+				supplier   	@134
+				vertices   	(list Points
+				    (434, 1035)
+				    (1170, 606))
+				line_style 	0)
+			    (object DependencyView "" @140
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64BF2340035E"
+				client     	@133
+				supplier   	@135
+				vertices   	(list Points
+				    (434, 1060)
+				    (1315, 912))
+				line_style 	0)
+			    (object DependencyView "" @141
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64BF234301A9"
+				client     	@133
+				supplier   	@136
+				vertices   	(list Points
+				    (434, 1076)
+				    (1423, 1205))
+				line_style 	0)
+			    (object DependencyView "" @142
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64BF23460078"
+				client     	@133
+				supplier   	@137
+				vertices   	(list Points
+				    (588, 1174)
+				    (1281, 1522))
+				line_style 	0)
+			    (object DependencyView "" @143
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64BF234A008A"
+				client     	@133
+				supplier   	@138
+				vertices   	(list Points
+				    (530, 1267)
+				    (943, 1785))
+				line_style 	0)
+			    (object NoteView @144
+				location   	(438, 519)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@144
+				    location   	(141, 441)
 				    fill_color 	13434879
 				    nlines     	3
 				    max_width  	559
@@ -3570,14 +3613,14 @@
 				fill_color 	13434879
 				width      	619
 				height     	169)
-			    (object AttachView "" @143
+			    (object AttachView "" @145
 				stereotype 	TRUE
 				line_color 	3342489
-				client     	@131
-				supplier   	@142
+				client     	@133
+				supplier   	@144
 				vertices   	(list Points
-				    (401, 620)
-				    (446, 231))
+				    (383, 992)
+				    (428, 603))
 				line_style 	0)))))
 	    (object Class_Category "角色管理"
 		quid       	"64BF23750302"
@@ -3592,9 +3635,7 @@
 		    (object UseCase "分页查询角色"
 			quid       	"64BF24260080")
 		    (object UseCase "NewUseCase2"
-			quid       	"64BF242D01D7")
-		    (object UseCase "角色下拉"
-			quid       	"64BF249A028E"))
+			quid       	"64BF242D01D7"))
 		logical_presentations 	(list unit_reference_list
 		    (object UseCaseDiagram "角色管理"
 			quid       	"64BF2381020B"
@@ -3605,7 +3646,7 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object ClassView "Class" "Use Case View::管理员（admin）" @144
+			    (object ClassView "Class" "Use Case View::应用管理员" @146
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
@@ -3620,20 +3661,20 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@144
+				    Parent_View 	@146
 				    location   	(380, 810)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	325
 				    justify    	0
-				    label      	"管理员（admin）")
+				    label      	"应用管理员")
 				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
 				quidu      	"64BF23A90334"
 				annotation 	8
 				autoResize 	TRUE)
-			    (object UseCaseView "Use Case View::角色管理::新增角色" @145
+			    (object UseCaseView "Use Case View::角色管理::新增角色" @147
 				location   	(837, 268)
 				font       	(object Font
 				    size       	10
@@ -3645,7 +3686,7 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@145
+				    Parent_View 	@147
 				    location   	(837, 406)
 				    anchor_loc 	1
 				    nlines     	2
@@ -3657,7 +3698,7 @@
 				fill_color 	13434879
 				quidu      	"64BF2415011A"
 				height     	118)
-			    (object UseCaseView "Use Case View::角色管理::修改角色" @146
+			    (object UseCaseView "Use Case View::角色管理::修改角色" @148
 				location   	(1284, 521)
 				font       	(object Font
 				    size       	10
@@ -3669,7 +3710,7 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@146
+				    Parent_View 	@148
 				    location   	(1284, 659)
 				    anchor_loc 	1
 				    nlines     	2
@@ -3681,7 +3722,7 @@
 				fill_color 	13434879
 				quidu      	"64BF241A0293"
 				height     	118)
-			    (object UseCaseView "Use Case View::角色管理::删除角色" @147
+			    (object UseCaseView "Use Case View::角色管理::删除角色" @149
 				location   	(1384, 878)
 				font       	(object Font
 				    size       	10
@@ -3693,7 +3734,7 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@147
+				    Parent_View 	@149
 				    location   	(1384, 1016)
 				    anchor_loc 	1
 				    nlines     	2
@@ -3705,7 +3746,7 @@
 				fill_color 	13434879
 				quidu      	"64BF24220063"
 				height     	118)
-			    (object UseCaseView "Use Case View::角色管理::分页查询角色" @148
+			    (object UseCaseView "Use Case View::角色管理::分页查询角色" @150
 				location   	(1228, 1190)
 				font       	(object Font
 				    size       	10
@@ -3717,7 +3758,7 @@
 				    color      	0
 				    default_color 	TRUE)
 				label      	(object ItemLabel
-				    Parent_View 	@148
+				    Parent_View 	@150
 				    location   	(1228, 1328)
 				    anchor_loc 	1
 				    nlines     	2
@@ -3729,79 +3770,45 @@
 				fill_color 	13434879
 				quidu      	"64BF24260080"
 				height     	118)
-			    (object UseCaseView "Use Case View::角色管理::角色下拉" @149
-				location   	(859, 1425)
-				font       	(object Font
-				    size       	10
-				    face       	"Arial"
-				    bold       	FALSE
-				    italics    	FALSE
-				    underline  	FALSE
-				    strike     	FALSE
-				    color      	0
-				    default_color 	TRUE)
-				label      	(object ItemLabel
-				    Parent_View 	@149
-				    location   	(859, 1563)
-				    anchor_loc 	1
-				    nlines     	2
-				    max_width  	630
-				    justify    	0
-				    label      	"角色下拉")
-				icon_style 	"Icon"
-				line_color 	3342489
-				fill_color 	13434879
-				quidu      	"64BF249A028E"
-				height     	118)
-			    (object DependencyView "" @150
+			    (object DependencyView "" @151
 				stereotype 	TRUE
 				line_color 	3342489
 				quidu      	"64BF24A80292"
-				client     	@144
-				supplier   	@145
+				client     	@146
+				supplier   	@147
 				vertices   	(list Points
 				    (437, 599)
 				    (643, 431))
 				line_style 	0)
-			    (object DependencyView "" @151
+			    (object DependencyView "" @152
 				stereotype 	TRUE
 				line_color 	3342489
 				quidu      	"64BF24AE0358"
-				client     	@144
-				supplier   	@146
+				client     	@146
+				supplier   	@148
 				vertices   	(list Points
 				    (437, 638)
 				    (1174, 534))
 				line_style 	0)
-			    (object DependencyView "" @152
+			    (object DependencyView "" @153
 				stereotype 	TRUE
 				line_color 	3342489
 				quidu      	"64BF24B10018"
-				client     	@144
-				supplier   	@147
+				client     	@146
+				supplier   	@149
 				vertices   	(list Points
 				    (437, 661)
 				    (1273, 850))
 				line_style 	0)
-			    (object DependencyView "" @153
-				stereotype 	TRUE
-				line_color 	3342489
-				quidu      	"64BF24B30010"
-				client     	@144
-				supplier   	@148
-				vertices   	(list Points
-				    (437, 685)
-				    (1137, 1132))
-				line_style 	0)
 			    (object DependencyView "" @154
 				stereotype 	TRUE
 				line_color 	3342489
-				quidu      	"64BF24B602FA"
-				client     	@144
-				supplier   	@149
+				quidu      	"64BF24B30010"
+				client     	@146
+				supplier   	@150
 				vertices   	(list Points
-				    (466, 790)
-				    (821, 1366))
+				    (437, 685)
+				    (1137, 1132))
 				line_style 	0)))))
 	    (object Class_Category "用户管理"
 		quid       	"64BF24C302DB"
@@ -4766,7 +4773,7 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object ClassView "Class" "Use Case View::管理员（admin）" @197
+			    (object ClassView "Class" "Use Case View::应用管理员" @197
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
@@ -4787,7 +4794,7 @@
 				    nlines     	2
 				    max_width  	325
 				    justify    	0
-				    label      	"管理员（admin）")
+				    label      	"应用管理员")
 				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
@@ -4951,7 +4958,7 @@
 				client     	@197
 				supplier   	@201
 				vertices   	(list Points
-				    (595, 564)
+				    (507, 506)
 				    (1414, 1101))
 				line_style 	0)
 			    (object DependencyView "" @207
@@ -4961,7 +4968,7 @@
 				client     	@197
 				supplier   	@202
 				vertices   	(list Points
-				    (595, 654)
+				    (536, 579)
 				    (1160, 1373))
 				line_style 	0)
 			    (object UseCaseView "Use Case View::用户管理::查询token用户信息" @208
@@ -4996,7 +5003,7 @@
 				supplier   	@208
 				vertices   	(list Points
 				    (507, 446)
-				    (1239, 200))
+				    (1104, 246))
 				line_style 	0)))))
 	    (object Class_Category "菜单管理"
 		quid       	"64BF25200323"
@@ -5009,9 +5016,7 @@
 		    (object UseCase "删除菜单"
 			quid       	"64BF2540016E")
 		    (object UseCase "查询菜单"
-			quid       	"64BF25450051")
-		    (object UseCase "菜单下拉"
-			quid       	"64BF25540245"))
+			quid       	"64BF25450051"))
 		logical_presentations 	(list unit_reference_list
 		    (object UseCaseDiagram "菜单管理"
 			quid       	"64BF25290034"
@@ -5022,11 +5027,11 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object ClassView "Class" "Use Case View::管理员（admin）" @210
+			    (object ClassView "Class" "Use Case View::应用管理员" @210
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(363, 453)
+				location   	(1902, 757)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5038,12 +5043,12 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@210
-				    location   	(363, 613)
+				    location   	(1902, 917)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	325
 				    justify    	0
-				    label      	"管理员（admin）")
+				    label      	"应用管理员")
 				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
@@ -5051,7 +5056,7 @@
 				annotation 	8
 				autoResize 	TRUE)
 			    (object UseCaseView "Use Case View::菜单管理::新增菜单" @211
-				location   	(856, 168)
+				location   	(2395, 472)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5063,7 +5068,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@211
-				    location   	(856, 306)
+				    location   	(2395, 610)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
@@ -5075,7 +5080,7 @@
 				quidu      	"64BF2534022B"
 				height     	118)
 			    (object UseCaseView "Use Case View::菜单管理::修改菜单" @212
-				location   	(1256, 296)
+				location   	(2795, 600)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5087,7 +5092,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@212
-				    location   	(1256, 434)
+				    location   	(2795, 738)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
@@ -5099,7 +5104,7 @@
 				quidu      	"64BF253902A7"
 				height     	118)
 			    (object UseCaseView "Use Case View::菜单管理::删除菜单" @213
-				location   	(1418, 637)
+				location   	(2957, 941)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5111,7 +5116,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@213
-				    location   	(1418, 775)
+				    location   	(2957, 1079)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
@@ -5123,7 +5128,7 @@
 				quidu      	"64BF2540016E"
 				height     	118)
 			    (object UseCaseView "Use Case View::菜单管理::查询菜单" @214
-				location   	(1162, 1009)
+				location   	(2701, 1313)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5135,7 +5140,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@214
-				    location   	(1162, 1147)
+				    location   	(2701, 1451)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
@@ -5153,8 +5158,8 @@
 				client     	@210
 				supplier   	@211
 				vertices   	(list Points
-				    (420, 417)
-				    (572, 331))
+				    (1959, 721)
+				    (2111, 635))
 				line_style 	0)
 			    (object DependencyView "" @216
 				stereotype 	TRUE
@@ -5163,8 +5168,8 @@
 				client     	@210
 				supplier   	@212
 				vertices   	(list Points
-				    (420, 440)
-				    (1146, 311))
+				    (1959, 744)
+				    (2685, 615))
 				line_style 	0)
 			    (object DependencyView "" @217
 				stereotype 	TRUE
@@ -5173,8 +5178,8 @@
 				client     	@210
 				supplier   	@213
 				vertices   	(list Points
-				    (420, 462)
-				    (1308, 613))
+				    (1959, 766)
+				    (2847, 917))
 				line_style 	0)
 			    (object DependencyView "" @218
 				stereotype 	TRUE
@@ -5183,8 +5188,8 @@
 				client     	@210
 				supplier   	@214
 				vertices   	(list Points
-				    (420, 491)
-				    (1079, 950))
+				    (1959, 795)
+				    (2618, 1254))
 				line_style 	0)))))
 	    (object Class_Category "个人中心"
 		quid       	"64C3DCDD02A3"
@@ -5202,7 +5207,7 @@
 				is_navigable 	TRUE)
 			    (object Role "$UNNAMED$8"
 				quid       	"64C3DD5802D2"
-				supplier   	"Use Case View::管理员（admin）"
+				supplier   	"Use Case View::应用管理员"
 				quidu      	"64BF23A90334")))
 		    (object Association "$UNNAMED$9"
 			quid       	"64C3DD5B03CB"
@@ -5214,7 +5219,7 @@
 				is_navigable 	TRUE)
 			    (object Role "$UNNAMED$11"
 				quid       	"64C3DD5C021D"
-				supplier   	"Use Case View::超级管理员（sadmin）"
+				supplier   	"Use Case View::超级管理员（admin）"
 				quidu      	"64BF222301D4")))
 		    (object Association "$UNNAMED$12"
 			quid       	"64C3DD5E02E9"
@@ -5238,11 +5243,11 @@
 			origin_x   	0
 			origin_y   	0
 			items      	(list diagram_item_list
-			    (object ClassView "Class" "Use Case View::管理员（admin）" @219
+			    (object ClassView "Class" "Use Case View::应用管理员" @219
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(1486, 1257)
+				location   	(514, 1389)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5254,23 +5259,23 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@219
-				    location   	(1486, 1417)
+				    location   	(514, 1549)
 				    anchor_loc 	1
 				    nlines     	2
-				    max_width  	328
+				    max_width  	325
 				    justify    	0
-				    label      	"管理员（admin）")
+				    label      	"应用管理员")
 				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
 				quidu      	"64BF23A90334"
 				annotation 	8
 				autoResize 	TRUE)
-			    (object ClassView "Class" "Use Case View::超级管理员（sadmin）" @220
+			    (object ClassView "Class" "Use Case View::超级管理员（admin）" @220
 				ShowCompartmentStereotypes 	TRUE
 				IncludeAttribute 	TRUE
 				IncludeOperation 	TRUE
-				location   	(2295, 449)
+				location   	(1323, 581)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5282,23 +5287,20 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@220
-				    location   	(2295, 609)
+				    location   	(1323, 741)
 				    anchor_loc 	1
 				    nlines     	2
-				    max_width  	325
+				    max_width  	461
 				    justify    	0
-				    label      	"超级管理员（sadmin）")
+				    label      	"超级管理员（admin）")
 				icon       	"Actor"
 				icon_style 	"Icon"
 				line_color 	3342489
 				quidu      	"64BF222301D4"
 				annotation 	8
 				autoResize 	TRUE)
-			    (object ClassView "Class" "Use Case View::普通用户" @221
-				ShowCompartmentStereotypes 	TRUE
-				IncludeAttribute 	TRUE
-				IncludeOperation 	TRUE
-				location   	(3470, 1298)
+			    (object UseCaseView "Use Case View::个人中心::修改密码" @221
+				location   	(1469, 1457)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5310,32 +5312,7 @@
 				    default_color 	TRUE)
 				label      	(object ItemLabel
 				    Parent_View 	@221
-				    location   	(3470, 1458)
-				    anchor_loc 	1
-				    nlines     	2
-				    max_width  	331
-				    justify    	0
-				    label      	"普通用户")
-				icon       	"Actor"
-				icon_style 	"Icon"
-				line_color 	3342489
-				quidu      	"64BF23E20194"
-				annotation 	8
-				autoResize 	TRUE)
-			    (object UseCaseView "Use Case View::个人中心::修改密码" @222
-				location   	(2441, 1325)
-				font       	(object Font
-				    size       	10
-				    face       	"Arial"
-				    bold       	FALSE
-				    italics    	FALSE
-				    underline  	FALSE
-				    strike     	FALSE
-				    color      	0
-				    default_color 	TRUE)
-				label      	(object ItemLabel
-				    Parent_View 	@222
-				    location   	(2441, 1463)
+				    location   	(1469, 1595)
 				    anchor_loc 	1
 				    nlines     	2
 				    max_width  	630
@@ -5346,8 +5323,8 @@
 				fill_color 	13434879
 				quidu      	"64C3DD4301CF"
 				height     	118)
-			    (object AssociationViewNew "$UNNAMED$6" @223
-				location   	(1936, 1287)
+			    (object AssociationViewNew "$UNNAMED$6" @222
+				location   	(964, 1419)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5361,32 +5338,32 @@
 				line_color 	3342489
 				quidu      	"64C3DD58011B"
 				roleview_list 	(list RoleViews
-				    (object RoleView "$UNNAMED$7" @224
-					Parent_View 	@223
-					location   	(450, 30)
+				    (object RoleView "$UNNAMED$7" @223
+					Parent_View 	@222
+					location   	(-522, 162)
 					stereotype 	TRUE
 					line_color 	3342489
 					quidu      	"64C3DD5802D0"
-					client     	@223
-					supplier   	@222
+					client     	@222
+					supplier   	@221
 					vertices   	(list Points
-					    (1936, 1287)
-					    (2330, 1314))
+					    (964, 1419)
+					    (1358, 1446))
 					line_style 	0)
-				    (object RoleView "$UNNAMED$8" @225
-					Parent_View 	@223
-					location   	(450, 30)
+				    (object RoleView "$UNNAMED$8" @224
+					Parent_View 	@222
+					location   	(-522, 162)
 					stereotype 	TRUE
 					line_color 	3342489
 					quidu      	"64C3DD5802D2"
-					client     	@223
+					client     	@222
 					supplier   	@219
 					vertices   	(list Points
-					    (1936, 1287)
-					    (1543, 1260))
+					    (964, 1419)
+					    (571, 1392))
 					line_style 	0)))
-			    (object AssociationViewNew "$UNNAMED$9" @226
-				location   	(2381, 985)
+			    (object AssociationViewNew "$UNNAMED$9" @225
+				location   	(1407, 1104)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5400,32 +5377,60 @@
 				line_color 	3342489
 				quidu      	"64C3DD5B03CB"
 				roleview_list 	(list RoleViews
-				    (object RoleView "$UNNAMED$10" @227
-					Parent_View 	@226
-					location   	(86, 536)
+				    (object RoleView "$UNNAMED$10" @226
+					Parent_View 	@225
+					location   	(-888, 655)
 					stereotype 	TRUE
 					line_color 	3342489
 					quidu      	"64C3DD5C021B"
-					client     	@226
-					supplier   	@222
+					client     	@225
+					supplier   	@221
 					vertices   	(list Points
-					    (2381, 985)
-					    (2428, 1266))
+					    (1407, 1104)
+					    (1456, 1398))
 					line_style 	0)
-				    (object RoleView "$UNNAMED$11" @228
-					Parent_View 	@226
-					location   	(86, 536)
+				    (object RoleView "$UNNAMED$11" @227
+					Parent_View 	@225
+					location   	(-888, 655)
 					stereotype 	TRUE
 					line_color 	3342489
 					quidu      	"64C3DD5C021D"
-					client     	@226
+					client     	@225
 					supplier   	@220
 					vertices   	(list Points
-					    (2381, 985)
-					    (2335, 704))
+					    (1407, 1104)
+					    (1359, 810))
 					line_style 	0)))
+			    (object ClassView "Class" "Use Case View::普通用户" @228
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(2498, 1430)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@228
+				    location   	(2498, 1590)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	325
+				    justify    	0
+				    label      	"普通用户")
+				icon       	"Actor"
+				icon_style 	"Icon"
+				line_color 	3342489
+				quidu      	"64BF23E20194"
+				annotation 	8
+				autoResize 	TRUE)
 			    (object AssociationViewNew "$UNNAMED$12" @229
-				location   	(2979, 1308)
+				location   	(2007, 1440)
 				font       	(object Font
 				    size       	10
 				    face       	"Arial"
@@ -5441,28 +5446,307 @@
 				roleview_list 	(list RoleViews
 				    (object RoleView "$UNNAMED$13" @230
 					Parent_View 	@229
-					location   	(-491, 10)
+					location   	(-1463, 142)
 					stereotype 	TRUE
 					line_color 	3342489
 					quidu      	"64C3DD5F018B"
 					client     	@229
-					supplier   	@222
+					supplier   	@221
 					vertices   	(list Points
-					    (2979, 1308)
-					    (2549, 1319))
+					    (2007, 1440)
+					    (1577, 1451))
 					line_style 	0)
 				    (object RoleView "$UNNAMED$14" @231
 					Parent_View 	@229
-					location   	(-491, 10)
+					location   	(-1463, 142)
 					stereotype 	TRUE
 					line_color 	3342489
 					quidu      	"64C3DD5F018D"
 					client     	@229
-					supplier   	@221
+					supplier   	@228
 					vertices   	(list Points
-					    (2979, 1308)
-					    (3409, 1298))
-					line_style 	0))))))))
+					    (2007, 1440)
+					    (2437, 1430))
+					line_style 	0)))))))
+	    (object Class_Category "下拉"
+		quid       	"64CBA69703C7"
+		exportControl 	"Public"
+		logical_models 	(list unit_reference_list
+		    (object UseCase "应用下拉"
+			quid       	"64CBA6D503DD"
+			visible_modules 	(list dependency_list
+			    (object Dependency_Relationship
+				quid       	"64CBA73D01F3"
+				supplier   	"Use Case View::应用管理员"
+				quidu      	"64BF23A90334")))
+		    (object UseCase "NewUseCase"
+			quid       	"64CBA6DD00C8")
+		    (object UseCase "角色下拉"
+			quid       	"64CBA70900D7")
+		    (object UseCase "菜单下拉"
+			quid       	"64CBA70F0277"))
+		logical_presentations 	(list unit_reference_list
+		    (object UseCaseDiagram "下拉"
+			quid       	"64CBA6A20037"
+			title      	"下拉"
+			zoom       	100
+			max_height 	28350
+			max_width  	21600
+			origin_x   	0
+			origin_y   	0
+			items      	(list diagram_item_list
+			    (object ClassView "Class" "Use Case View::超级管理员（admin）" @232
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(1376, 1373)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@232
+				    location   	(1376, 1533)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	461
+				    justify    	0
+				    label      	"超级管理员（admin）")
+				icon       	"Actor"
+				icon_style 	"Icon"
+				line_color 	3342489
+				quidu      	"64BF222301D4"
+				annotation 	8
+				autoResize 	TRUE)
+			    (object ClassView "Class" "Use Case View::应用管理员" @233
+				ShowCompartmentStereotypes 	TRUE
+				IncludeAttribute 	TRUE
+				IncludeOperation 	TRUE
+				location   	(3366, 1377)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@233
+				    location   	(3366, 1537)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	325
+				    justify    	0
+				    label      	"应用管理员")
+				icon       	"Actor"
+				icon_style 	"Icon"
+				line_color 	3342489
+				quidu      	"64BF23A90334"
+				annotation 	8
+				autoResize 	TRUE)
+			    (object UseCaseView "Use Case View::下拉::应用下拉" @234
+				location   	(2444, 1100)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@234
+				    location   	(2444, 1238)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	630
+				    justify    	0
+				    label      	"应用下拉")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"64CBA6D503DD"
+				height     	118)
+			    (object UseCaseView "Use Case View::下拉::角色下拉" @235
+				location   	(2449, 1475)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@235
+				    location   	(2449, 1613)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	630
+				    justify    	0
+				    label      	"角色下拉")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"64CBA70900D7"
+				height     	118)
+			    (object UseCaseView "Use Case View::下拉::菜单下拉" @236
+				location   	(2456, 1890)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@236
+				    location   	(2456, 2028)
+				    anchor_loc 	1
+				    nlines     	2
+				    max_width  	630
+				    justify    	0
+				    label      	"菜单下拉")
+				icon_style 	"Icon"
+				line_color 	3342489
+				fill_color 	13434879
+				quidu      	"64CBA70F0277"
+				height     	118)
+			    (object DependencyView "" @237
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64CBA71900F5"
+				client     	@232
+				supplier   	@234
+				vertices   	(list Points
+				    (1433, 1356)
+				    (2334, 1125))
+				line_style 	0)
+			    (object DependencyView "" @238
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64CBA7300116"
+				client     	@232
+				supplier   	@235
+				vertices   	(list Points
+				    (1433, 1376)
+				    (2339, 1459))
+				line_style 	0)
+			    (object DependencyView "" @239
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64CBA7320355"
+				client     	@232
+				supplier   	@236
+				vertices   	(list Points
+				    (1587, 1472)
+				    (2345, 1834))
+				line_style 	0)
+			    (object DependencyView "" @240
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64CBA74C0168"
+				client     	@233
+				supplier   	@234
+				vertices   	(list Points
+				    (3307, 1357)
+				    (2552, 1129))
+				line_style 	0)
+			    (object DependencyView "" @241
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64CBA71C0069"
+				client     	@233
+				supplier   	@235
+				vertices   	(list Points
+				    (3307, 1381)
+				    (2557, 1459))
+				line_style 	0)
+			    (object DependencyView "" @242
+				stereotype 	TRUE
+				line_color 	3342489
+				quidu      	"64CBA75102C7"
+				client     	@233
+				supplier   	@236
+				vertices   	(list Points
+				    (3307, 1407)
+				    (2551, 1832))
+				line_style 	0)
+			    (object NoteView @243
+				location   	(1387, 909)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@243
+				    location   	(1062, 831)
+				    fill_color 	13434879
+				    nlines     	3
+				    max_width  	614
+				    justify    	1
+				    label      	"所有应用、指定应用下的角色，指定应用下的菜单")
+				line_color 	3342489
+				fill_color 	13434879
+				width      	674
+				height     	169)
+			    (object AttachView "" @244
+				stereotype 	TRUE
+				line_color 	3342489
+				client     	@232
+				supplier   	@243
+				vertices   	(list Points
+				    (1376, 1292)
+				    (1384, 993))
+				line_style 	0)
+			    (object NoteView @245
+				location   	(3483, 945)
+				font       	(object Font
+				    size       	10
+				    face       	"Arial"
+				    bold       	FALSE
+				    italics    	FALSE
+				    underline  	FALSE
+				    strike     	FALSE
+				    color      	0
+				    default_color 	TRUE)
+				label      	(object ItemLabel
+				    Parent_View 	@245
+				    location   	(3139, 864)
+				    fill_color 	13434879
+				    nlines     	3
+				    max_width  	653
+				    justify    	1
+				    label      	"本应用、本应用下的角色、本应用下的菜单")
+				line_color 	3342489
+				fill_color 	13434879
+				width      	713
+				height     	175)
+			    (object AttachView "" @246
+				stereotype 	TRUE
+				line_color 	3342489
+				client     	@245
+				supplier   	@233
+				vertices   	(list Points
+				    (3458, 1032)
+				    (3385, 1297))
+				line_style 	0))))))
 	logical_presentations 	(list unit_reference_list
 	    (object UseCaseDiagram "Main"
 		quid       	"64BF218801D0"
