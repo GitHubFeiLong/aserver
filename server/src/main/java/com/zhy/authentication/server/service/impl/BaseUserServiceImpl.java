@@ -282,6 +282,7 @@ public class BaseUserServiceImpl implements BaseUserService {
         loginDTO.setToken(token);
         // 设置应用首页地址
         loginDTO.setHomePage(baseAppDTO.getHomePage());
+
         return loginDTO;
     }
 

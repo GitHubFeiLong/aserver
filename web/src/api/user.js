@@ -2,12 +2,9 @@ import request from '@/utils/request'
 import {API_PREFIX} from "@/constant/commons";
 
 export function login(data) {
-  const username = encodeURI(data.username);
-  const password = encodeURI(data.password);
-  console.log(password)
-  const selectAppId = data.selectAppId ? data.selectAppId : null;
+  const selectAppId = data.selectAppId ? data.selectAppId : "";
   return request({
-    url: `${API_PREFIX}/user/login?username=${username}&password=${password}&appId=${selectAppId}`,
+    url: `${API_PREFIX}/user/login?username=${data.username}&password=${encodeURIComponent(data.password)}&appId=${selectAppId}`,
     method: 'post'
   })
 }
